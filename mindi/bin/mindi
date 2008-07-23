@@ -1,0 +1,259 @@
+#!/usr/bin/perl -w
+#
+# Mindi main application
+# Mini-distribution maker for the MondoRescue project
+#
+# $Id$
+#
+# Copyright B. Cornec 2008
+# Provided under the GPL v2
+
+# Syntax: see below
+
+use strict 'vars';
+use Getopt::Long qw(:config auto_abbrev no_ignore_case);
+use Data::Dumper;
+use English;
+use File::Basename;
+use File::Copy;
+use File::stat;
+use File::Temp qw(tempdir);
+use POSIX qw(strftime);
+use Digest::MD5 qw(md5_hex);
+use lib qw (lib);
+use ProjectBuilder::Base;
+use ProjectBuilder::Conf;
+use ProjectBuilder::Distribution;
+
+# Global variables
+my %opts;					# CLI Options
+my @date = pb_get_date();
+my $mr_date = strftime("%Y-%m-%d %H:%M:%S", @date);
+
+=pod
+
+=head1 NAME
+
+Mindi - Tool to create a boot environment from a distribution
+
+=head1 DESCRIPTION
+
+B<mindi> creates a bootable ISO/USB image using files from the system it runs on. B<mindi> will try hard to reproduce the environment of its host system including loaded modules to ensure that the system can be booted properly from the created rescue media. B<mindi> is used by monodarchive(8) to produce the required USB/ISO images but can also be used stand-alone.
+
+For stand-alone usage, B<mindi> may be called without any parameters or switches. It will then interactively ask the user for all information required to create a set of boot/root media. Options on the command line or a configuration file can also be used to alter the way B<mindi> is working
+
+The probably more frequent way of calling B<mindi> is non-interactively from mondoarchive(8) using a dedicated configuration file.
+
+=head1 SYNOPSIS
+
+mindi [-v]|[-q]|[-h]|[--man]
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-v|--verbose>
+
+Print a brief help message and exits.
+
+=item B<-q|--quiet>
+
+Do not print any output.
+
+=item B<-h|--help>
+
+Print a brief help message and exits.
+
+=item B<--man>
+
+Prints the manual page and exits.
+
+=item B<-i|--iso iso_image>
+
+Name of the ISO image you want to created.
+
+=back 
+
+=head1 WEB SITES
+
+The main Web site of the project is available at L<http://www.mondorescue.org/>. Bug reports should be filled using the trac instance of the project at L<http://trac.mondorescue.org/>.
+
+=head1 USER MAILING LIST
+
+The miling list of the project is available at L<mailto:mondo@lists.sf.net>
+
+=head1 CONFIGURATION FILES
+
+The system administrator may have a configuration file in F<$HOME/.mondorescue>. The values in this file may overwrite any other configuration file value. 
+
+Here is an example of such a configuration file:
+
+ # mrcachedir points to the directory where the tool will store generated content
+ # If not defined, mrcachedir is under /var/cache/mindi
+ mrcachedir mindi = /var/cache/mindi
+ 
+=head1 AUTHORS
+
+The Mondorescue.org team L<http://www.mondorescue.org/> lead by Bruno Cornec L<mailto:bruno@mondorescue.org>.
+
+=head1 COPYRIGHT
+
+Mindi is distributed under the GPL v2.0 license
+described in the file C<COPYING> included with the distribution.
+
+=cut
+
+# ---------------------------------------------------------------------------
+
+# Initialize the syntax string
+
+pb_syntax_init("mindi Version PBVER-rPBREV\n");
+pb_display_init("text","");
+
+# Handle options
+#
+GetOptions("help|?|h" => \$opts{'h'}, 
+		"man" => \$opts{'man'},
+		"verbose|v+" => \$opts{'v'},
+		"quiet|q" => \$opts{'q'},
+		"log-files|l=s" => \$opts{'l'},
+		"force|f" => \$opts{'f'},
+		"iso|i=s" => \$opts{'i'},
+		"usb|u=s" => \$opts{'u'},
+		"tape|t=s" => \$opts{'t'},
+		"printvar|p=s" => \$opts{'p'},
+		"obdr|o" => \$opts{'o'},
+		"version|V" => \$opts{'V'},
+) || pb_syntax(-1,0);
+
+# easy options
+if (defined $opts{'h'}) {
+	pb_syntax(0,1);
+}
+if (defined $opts{'man'}) {
+	pb_syntax(0,2);
+}
+if (defined $opts{'p'}) {
+	pb_display("$ENV{$opts{'p'}}\n");
+	exit(0);
+}
+
+if (defined $opts{'v'}) {
+	$pbdebug = $opts{'v'};
+}
+
+my $force = 0;
+
+if (defined $opts{'f'}) {
+	$force=1;
+}
+if (defined $opts{'q'}) {
+	$pbdebug=-1;
+}
+my $iso;
+
+if (defined $opts{'i'}) {
+	$iso = $opts{'i'};
+}
+
+#
+# Global variables
+#
+my $MINDI_VERSION = "PBVER-rPBREV";
+my $MINDI_PREFIX = "PBPREFIX";
+my $MINDI_CONF = "PBCONF";
+my $MINDI_LIB = "PBLIB";
+my $MINDI_SBIN = "$MINDI_PREFIX/sbin";
+my $MINDI_FDISK = "$MINDI_SBIN/parted2fdik";
+my $MINDI_DEPLIST = "$MINDI_CONF/deplist.d";
+# Better ?
+my $ARCH = `uname -m`;
+chop($ARCH);
+
+# 
+# Temp dir
+#
+pb_temp_init();
+
+#
+# Conf files Management
+# the $MINDI_CONF/mondorescue.conf.dist is delivered as part of the project and
+# its checksum is verified as we need good default values that we can trust
+#
+open(MD5,"$MINDI_CONF/mondorescue.conf.dist.md5") || die "Unable to read mandatory $MINDI_CONF/mondorescue.conf.dist.md5: $!";
+my $omd5 = <MD5>;
+chop($omd5);
+close(MD5);
+open(CONF,"$MINDI_CONF/mondorescue.conf.dist") || die "Unable to read mandatory $MINDI_CONF/mondorescue.conf.dist: $!";
+my $md5 = Digest::MD5->new;
+binmode(CONF);
+$md5->addfile(CONF);
+die "Invalid MD5 found sum for $MINDI_CONF/mondorescue.conf.dist: $md5->hexdigest" if ($omd5 ne $md5->hexdigest);
+close(CONF);
+
+pb_conf_add("$ENV{'HOME'}/.mondorescuerc","$MINDI_CONF/mondorescue.conf","$MINDI_CONF/mondorescue.conf.dist");
+
+#
+# Configuration parameters
+#
+$ENV{'PBPROJ'} = "mindi";
+my ($mr_boot_size,$mr_boot_cd,$mr_boot_usb,$mr_boot_tape,$mr_kernel,$mr_fstab) =  pb_conf_get("mr_boot_size","mr_boot_cd","mr_boot_usb","mr_boot_tape","mr_kernel","mr_fstab");
+my ($mr_tape_mods,$mr_scsi_mods,$mr_ide_mods,$mr_pcmcia_mods,$mr_usb_mods,$mr_net_mods,$mr_cdrom_mods,$mr_deny_mods,$mr_force_mods) =  pb_conf_get("mr_tape_mods","mr_scsi_mods","mr_ide_mods","mr_pcmcia_mods","mr_usb_mods","mr_net_mods","mr_cdrom_mods","mr_extra_mods","mr_deny_mods","mr_force_mods");
+my ($mr_logfile,$mr_cache_dir,$mr_boot_msg,$mr_burn_cmd,$mr_burn_opt) = pb_conf_get("mr_logfile","mr_cache_dir","mr_boot_msg","mr_burn_cmd","mr_burn_opt");
+
+#
+# Manage log file
+#
+my $logfile = $mr_logfile->{$ENV{'PBPROJ'}};
+
+if (defined $opts{'l'}) {
+	$logfile = $opts{'l'};
+}
+open(pbLOG,"> $logfile") || die "Unable to log to $logfile: $!";
+$pbLOG = \*pbLOG;
+$pbdebug = 0  if ($pbdebug == -1);
+pb_log_init($pbdebug, $pbLOG);
+
+pb_log(0,"mindi start date: $mr_date");
+pb_log(0,"-------------------------------------");
+pb_log(0,"mindi v$MINDI_VERSION");
+pb_log(0,"$ARCH architecture detected");
+pb_log(0,"mindi called with the following arguments: ".join(" ",@ARGV));
+pb_log(0,"-------------------------------------");
+pb_log(0,"MONDO_CACHE: $ENV{'MONDO_CACHE'}") if (defined $ENV{'MONDO_CACHE'});
+pb_log(0,"MINDI_LIB: $MINDI_LIB");
+pb_log(0,"MINDI_CONF: $MINDI_CONF");
+pb_log(0,"MINDI_SBIN: $MINDI_SBIN");
+if (-r "$ENV{'HOME'}/.mondorescuerc") {
+	pb_log(0,"-------------------------------------");
+	pb_log(0,"Conf file $ENV{'HOME'}/.mondorescuerc");
+	pb_display_file("$ENV{'HOME'}/.mondorescuerc");
+}
+if (-r "$MINDI_CONF/mondorescue.conf") {
+	pb_log(0,"-------------------------------------");
+	pb_log(0,"Conf file $MINDI_CONF/mondorescue.conf");
+	pb_display_file("$MINDI_CONF/mondorescue.conf");
+}
+pb_log(0,"-------------------------------------");
+
+#
+# Prepare cache dir
+#
+pb_rm_rf("$mr_cache_dir/*");
+pb_mkdir_p($mr_cache_dir);
+
+# 
+# LVM setup
+#
+my $LVM = "none";
+my $LVMCMD = "";
+if (-d "/proc/lvm") {
+	# Version 1
+	$LVM = "v1";
+} elsif (-d "/dev/mapper") {
+	# Version 2
+	$LVM = "v2";
+	$LVMCMD = "lvm";
+}	
+pb_log(0,"LVM set to $LVM");
+pb_log(0,"-------------------------------------");
