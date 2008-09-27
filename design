@@ -1,0 +1,44 @@
+- Works for multiple interface types (text, curses, X, Web easily)
+- Works with conf files a la pb
+- Works with plugins for Boot Loader, Disks layout and types, Virtual disk layer, Real disk layer
+- Works with different fstab contents
+- Works with multiple network backend
+- Works with multiple device target (real, virtual)
+- Works for cloning as for DR
+- Works in chroot/live CD/live system
+
+
+Mindi design:
+
+Goal is to create a bootable env contaning everything suited for DR/Cloning from the running system
+It should
+
+	- Initialize all what is needed (tmp dir, UI, syntax, ...)
+	- get parameters from user bsed on conf file opions
+
+	- get the boot loader info
+
+	- get all the HW disk info (including Raid controllers)
+	- get all the SW disk info (partitions)
+	- get all logical layer info (LVM, EVMS, ...)
+	- get all the FS layer info (deal with UUID/LABELS/...)
+	
+	- get kernel info (keep failsafe support)
+	- deal with mandatory devices (kbd, USB CD, ...)
+	- get all the mandatory tools needed + deps
+	- create initrd/initramfs/... suited
+	- get device driver support info (udev/devfs/...)
+	- get the right list of dev. drivers
+
+	- get target boot device details
+	- generate target boot files/info (conf file format)
+	- optional generate boot media
+	
+	- manages mondoarchive interface
+
+	- Interface can be dialog based + a static text window which contains a log of actions done and running
+
+
+Mondoarchive design
+
+Mondorestore design
