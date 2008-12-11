@@ -188,213 +188,54 @@ print OUTPUT "# Desactivate Volume Groups\n";
 print OUTPUT "$lvmcmd vgchange -an\n";
 print OUTPUT "\n";
 
+print OUTPUT "# Creating Physical Volumes\n";
 # Analyze the existing physical volumes
-my @lvmpvs = ();
-open(LVM,"$lvmcmd pvdisplay |") || mr_exit(-1,"Unable to execute $lvmcmd pvdisplay");
+open(LVM,"$lvmcmd pvdisplay -c |") || mr_exit(-1,"Unable to execute $lvmcmd pvdisplay -c");
 while (<LVM>) {
-		if (/PV Name/) {
-				my $lvmpv = $_;
-				$lvmpv =~ s/^\s*PV Name ([A-z0-9/])/$1/;
-		}
-		push($lvmpv,@lvmpvs);
+		my ($pvname,$vgname,$pvsize,$ipvn,$pvstat,$pvna,$lvnum,$pesize,$petot,$pefree,$pelloc) = split(/:/);
+		print OUTPUT "$lvmcmd pvcreate -ff -y -s $pesize $pvname\n";
 }
 close(LVM);
-
-ListAllPhysicalVolumes() {
-	if [ $lvmversion = 2 ]; then
-		$LVMCMD pvscan 2> /dev/null | grep 'PV' | awk '{print $2}'
-	else
-		pvscan 2> /dev/null | grep '"' | cut -d'"' -f2
-	fi
-}
-print OUTPUT "# Creating Physical Volumes\n";
-foreach my $pv (@lvmpvs) {
-	print OUTPUT "echo y | $lvmcmd pvcreate -ff $pv\n";
-}
 print OUTPUT "\n";
-
 print OUTPUT "# Scanning again Volume Groups\n";
 print OUTPUT "$lvmcmd vgscan\n";
 print OUTPUT "\n";
 
 # Analyze the existing volume groups
 print OUTPUT "# Creating Volume Groups and Activating them\n";
-my @lvmvgs = ();
-open(LVM,"$lvmcmd vgdisplay |") || mr_exit(-1,"Unable to execute $lvmcmd vgdisplay");
+open(LVM,"$lvmcmd vgdisplay -c |") || mr_exit(-1,"Unable to execute $lvmcmd vgdisplay -c");
 while (<LVM>) {
-		if (/VG Name/) {
-				my $lvmvg = $_;
-				$lvmvg =~ s/^\s*VG Name ([A-z0-9/])/$1/;
-				#$LVMCMD vgdisplay 2> /dev/null | awk '/^ *VG Name/ {print $3;}'
-		}
-		push($lvmvg,@lvmvgs);
-}
-close(LVM);
-
-foreach my $vg (@lvmvgs) {
+	my ($vgname,$vgaccess,$vgstat,$vgnum,$lvmaxnum,$lvnum,$ocalvinvg,$lvmaxsize,$pvmaxnum,$cnumpv,$anumpv,$vgsize,$pesize,$penum,$pealloc,$pefree,$uuid) = split(/:/);
 	if ($lvmver < 2) {
 		print OUTPUT "# Removing device first as LVM v1 doesn't do it\n";
 		print OUTPUT "rm -Rf /dev/$vg\n";
 	}
-	mr_lvm_create_vg($vg);
+	$lvmaxnum = 255 if ($lvmaxnum > 256);
+	$pvmaxnum = 255 if ($pvmaxnum > 256);
+	print OUTPUT "# Create Volume Group $vgname\n";
+	# Pb sur pesize unite ?
+	print OUTPUT "$lvmcmd vgcreate $vgname -p $pvmaxnum -s $pesize -l $lvmaxnum $lvmaxnum\n";
 }
+close(LVM);
+print OUTPUT "\n";
+print OUTPUT "# Activate Volume Group $vg\n";
+print OUTPUT "$lvmcmd vgchange -ay\n";
+print OUTPUT "\n";
 
-sub mr_lvm_create_vg {
-
-my $vg = shift;
-
-$vg_params=`GenerateVgcreateParameters $vg`
-GenerateVgcreateParameters() {
-	local current_VG device fname incoming VG_info_file max_logical_volumes max_physical_volumes physical_extent_size output blanklines
-	current_VG=$1
-	VG_info_file=$MINDI_TMP/$$.vg-info.txt
-	$LVMCMD vgdisplay $current_VG > $VG_info_file
-	max_logical_volumes=`GetValueFromField "$VG_info_file" "MAX LV"`
-	[ $max_logical_volumes -ge 256 ] && max_logical_volumes=255
-	max_physical_volumes=`GetValueFromField "$VG_info_file" "MAX PV"`
-	[ $max_physical_volumes -ge 256 ] && max_physical_volumes=255
-	physical_extent_size=`GetValueFromField "$VG_info_file" "PE Size"`
-	output=""
-	[ "$max_logical_volumes" ]  && output="$output -l $max_logical_volumes"
-	[ "$max_physical_volumes" ] && output="$output -p $max_physical_volumes"
-	[ "$physical_extent_size" ] && output="$output -s $physical_extent_size"
-	echo "$output"
-	rm -f $VG_info_file
-}
-
-
-if ($lvmver = 1) {
-	$info_file = "/proc/lvm/VGs/$vg/group";
-	$pvs=`ls /proc/lvm/VGs/$vg/PVs`
-		$list_of_devices=""
-		for i in $pvs ; do
-	    	fname=/proc/lvm/VGs/$vg/PVs/$i
-	    	device=`GetValueFromField $fname "name:"`
-	    	$list_of_devices="$list_of_devices $device"
-		done
-} elsif ($lvmver = 2) {
-		$list_of_devices=`$lvmcmd pvs | grep " $vg " | awk '{print $1}'`
-}
-	print OUTPUT "# Create Volume Group $vg\n";
-	print OUTPUT "$lvmcmd vgcreate $vg $vg_param $list_of_devices\n";
-	print OUTPUT "# Activate Volume Group $vg\n";
-	print OUTPUT "$lvmcmd vgchnge -a y $vg\n";
-}
-
-echo "Finally, create the LV's (logical volumes)."
-all_logical_volumes=`ListAllLogicalVolumes`
-for current_LV in $all_logical_volumes ; do
-	ProcessLogicalVolume $current_LV
-done
-echo ""
-echo "# $LVMCMD vgscan"
-echo "Now you may format the LV's:-"
-for i in `ListAllLogicalVolumes` ; do
-	echo "(mkfs -t foo $i or something like that)"
-done
-WriteShutdownScript
-exit 0
-
-
-GetValueFromField() {
-	local res
-	sed s/'    '/~/ "$1" | tr -s ' ' ' ' | sed s/'~ '/'~'/ | grep -i "$2~" | cut -d'~' -f2,3,4,5 | tr '~' ' ' | gawk '{ if ($2=="MB") {printf "%dm",$1;} else if ($2=="KB") {printf "%dk",$1;} else if ($2=="GB") {printf "%fg",$1;} else {print $0;};}'
-}
-
-
-GetLastBit() {
-	local i res
-	i=20
-	res=""
-	while [ ! "$res" ] ; do
-		i=$(($i-1))
-		res=`echo "$1" | cut -d'/' -f$i`
-	done
-	echo "$res"
-}
-
-
-ProcessLogicalVolume() {
-	local LV_full_string fname logical_volume volume_group device
-	LV_full_string=$1
-	[ ! -e "$1" ] && Die "Cannot find LV file $1"
-	volume_group=`echo "$LV_full_string" | cut -d'/' -f3`
-	logical_volume=`echo "$LV_full_string" | cut -d'/' -f4`
-	if [ $lvmversion = 2 ]; then
-		device=$LV_full_string
-		params=`GenerateLvcreateParameters $device`
-	else
-		fname=/proc/lvm/VGs/$volume_group/LVs/$logical_volume
-		if [ ! -e "$fname" ] ; then
-	    	echo "Warning - cannot find $volume_group's $logical_volume LV file"
-		else
-	    	device=`GetValueFromField $fname "name:"`
-	    	params=`GenerateLvcreateParameters $device`
-		fi
-	fi
-	echo "# $LVMCMD lvcreate$params -n $logical_volume $volume_group"
-}
-
-
-GenerateLvcreateParameters() {
-	local device stripes stripesize device fname allocation output readahead
-	fname=$MINDI_TMP/PLF.$$.txt
-	device=$1
-	output=""
-	$LVMCMD lvdisplay $device > $fname
-	stripes=`GetValueFromField $fname "Stripes"`
-	stripesize=`GetValueFromField $fname "Stripe size (MByte)"`m
-	[ "$stripesize" = "m" ] && stripesize=`GetValueFromField $fname "Stripe size (KByte)"`k
-	[ "$stripesize" = "k" ] && stripesize=""
-	allocation=`GetValueFromField $fname "LV Size"`
-	[ ! "`echo "$allocation" | grep "[k,m,g]"`" ] && allocation="$allocation"m
-	if echo "$allocation" | grep -E '^.*g$' > /dev/null 2> /dev/null ; then
-		val=`echo "$allocation" | sed s/g//`
-		allocation=`echo "$val" | awk '{c=$1; printf "%d", c*1024;}'`m
-	fi
-	readahead=`GetValueFromField $fname "Read ahead sectors"`
-	rm -f $fname
+print OUTPUT "# Creating Logical Volumes\n";
+open(LVM,"$lvmcmd lvdisplay -c |") || mr_exit(-1,"Unable to execute $lvmcmd lvdisplay -c");
+while (<LVM>) {
+	my ($lvname,$vgname,$lvaccess,$lvstat,$lvnum,$oclv,$lvsize,$leinlv,$lealloc,$allocpol,$reaadhead,$major,$minor) = split(/:/);
+	print OUTPUT "# Create Logical Volume $lvname\n";
+	print OUTPUT "$lvmcmd lvcreate -n $lvname -L $lvsize -r $redahed $vgname\n";
 	[ "$stripes" ]    && output="$output -i $stripes"
 	[ "$stripesize" ] && output="$output -I $stripesize"
-	[ "$allocation" ] && output="$output -L $allocation"
-	[ "$readahead" ]  && output="$output -r $readahead"
-	echo "$output"
 }
+close(LVM);
+print OUTPUT "\n";
+print OUTPUT "# Scanning again Volume Groups\n";
+print OUTPUT "$lvmcmd vgscan\n";
+print OUTPUT "\n";
 
-
-
-
-
-
-ListAllLogicalVolumes() {
-	if [ $lvmversion = 2 ]; then
-		$LVMCMD lvscan 2> /dev/null | grep "'" | cut -d"'" -f2
-	else
-		lvscan 2> /dev/null | grep '"' | cut -d'"' -f2
-	fi
-}
-
-
-
-WriteShutdownScript() {
-	local i
-	echo ""
-	echo "Finally, to shut down and delete the volumes, do this:-"
-	for i in `ListAllLogicalVolumes` ; do
-	    echo "($LVMCMD lvremove -f $i)"
-	done
-	for i in `ListAllVolumeGroups` ; do
-	    echo "($LVMCMD vgchange -a n $i)"
-	done
-	for i in `ListAllVolumeGroups` ; do
-	    echo "($LVMCMD vgremove $i)"
-	done
-	if [ $lvmversion = 2 ]; then
-		echo "(rmmod dm-mod & rmmod dm_mod & )"
-	else
-		echo "(rmmod lvm-mod)"
-	fi
-}
-
-
-
+WriteShutdownScript
+mr_exit(0,"End of analyze-lvm");
