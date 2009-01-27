@@ -197,6 +197,7 @@ while (<INPUT>) {
 			print $OUTPUT "# Activate All Volume Groups\n";
 			print $OUTPUT "$lvmcmd vgchange -ay\n";
 			print $OUTPUT "\n";
+			$firsttime = 1;
 		}
 		my ($tag,$lvname,$vgname,$lvaccess,$lvstat,$lvnum,$oclv,$lvsize,$leinlv,$lealloc,$allocpol,$readahead,$major,$minor) = split(/:/);
 		print $OUTPUT "# Create Logical Volume $lvname\n";
