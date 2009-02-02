@@ -1,0 +1,14 @@
+Document: mondo-doc
+Title: Mondo Rescue and Mindi Linux HOWTO
+Author: Hugo Rabson, Mikael Hultgren, Stan Benoit ("Troff"), Randy Delfs,
+ Cafeole, Bryan J. Smith
+Abstract:  Mondo Rescue is a Disaster Recovery Solution which allows you to
+ effortlessly backup and interactively restore Linux, Windows and other
+ supported filesystem partitions to/from CD-R/RW media, tape, NFS, ... and
+ Mindi Linux provides the bootable emergency restore CD set which Mondo
+ uses at boot-time.
+Section: utils
+ 
+Format: HTML
+Index: /usr/share/doc/mondo-doc/html/index.html
+Files: /usr/share/doc/mondo-doc/html/*.html
