@@ -1,1 +1,0 @@
-'s/%define rel..*/%define rel %{mkrel} %{mrel}/'
