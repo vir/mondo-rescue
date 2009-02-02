@@ -1,0 +1,27 @@
+Source: mondo-doc
+Section: utils
+Priority: optional
+Maintainer: Bruno Cornec <bruno@mondorescue.org>
+Build-Depends: debhelper (>= 4.2.20)
+Standards-Version: 3.6.1
+
+Package: mondo-doc
+Architecture: all
+Section: doc
+Priority: optional
+Suggests: mondo
+Description: manual for Mondo, a powerful disaster recovery suite
+ Mondo is reliable. It backs up your Debian GNU/Linux server or workstation to
+ tape, CD-R, CD-RW, NFS or hard disk partition. In the event of catastrophic
+ data loss, you will be able to restore all of your data [or as much as you
+ want], from bare metal if necessary. Mondo is in use by numerous blue-chip
+ enterprises and large organizations, dozens of smaller companies, and tens of
+ thousands of users.
+ .
+ Mondo is comprehensive. Mondo supports LVM, RAID, ext2, ext3, JFS, XFS,
+ ReiserFS, VFAT, and can support additional file systems easily. It supports
+ adjustments in disk geometry, including migration from non-RAID to RAID. Mondo
+ runs on all major Linux distributions and is getting better all the time. You
+ may even use it to backup non-Linux partitions, such as NTFS.
+ .
+ Homepage: http://www.mondorescue.org

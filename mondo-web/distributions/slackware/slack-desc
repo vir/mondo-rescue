@@ -1,0 +1,11 @@
+mondo-doc: mondo-doc VVV A program which creates a rescue/restore CD/tape
+mondo-doc:
+mondo-doc: Mondo is a GPL disaster recovery solution to create backup media
+mondo-doc: (CD, DVD, tape, network images) that can be used to redeploy the
+mondo-doc: damaged system, as well as deploy similar or less similar systems.
+mondo-doc:
+mondo-doc:
+mondo-doc:
+mondo-doc:
+mondo-doc:
+mondo-doc: Package Created By: mr
