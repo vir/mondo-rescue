@@ -1,0 +1,56 @@
+Introduction
+============
+
+MondoRescue is the premier GPL disaster recovery suite for Linux/FreeBSD.
+
+This is the Mindi part of MondoRescue. Mindi is responsible for creating boot
+media used by MondoRescue. The part of MondoReccue responsible carrying out the
+actual backups and restores is called Mondo and available as a separate
+package.
+
+MondoRescue is reliable. It backs up your server or workstation to tape, CD-R,
+CD-RW, DVD, NFS or hard disk partition. In the event of catastrophic data loss,
+you will be able to restore all of your data [or as much as you want], from
+bare metal if necessary. MondoRescue is in use by numerous blue-chip
+enterprises and large organizations, dozens of smaller companies, and tens of
+thousands of users.
+
+MondoRescue is comprehensive. MondoRescue supports LVM, RAID, ext2, ext3, ext4,
+JFS, XFS, ReiserFS, VFAT, and can support additional file systems easily. It
+supports adjustments in disk geometry, including migration from non-RAID to
+RAID. MondoRescue runs on all major Linux distributions and FreeBSD and is
+getting better all the time. You may even use it to backup non-Linux
+partitions, such as NTFS.
+
+
+Installation
+============
+
+You can get the latest packages from
+ftp://ftp.mondorescue.org
+
+Please see file 'INSTALL' for instructions about how to build and install
+Mindi. Note that your distribution may already contain MondoRescue, so all you
+may have to do is install the mindi package and you are all set.
+
+
+Documentation
+=============
+
+Various documentation is available on the MondoRescue website at 
+http://www.mondorescue.org/docs/docs.html. This documentation may also be
+available locally under /usr/share/doc/mondo-<version> or similar (or under
+/usr/local).
+
+Further to that, there is a manpage for mindi(8).
+
+
+Support
+=======
+
+Apart from the above-mentioned documentation, there is a Wiki with growing
+contents at the following URL: http://trac.mondorescue.org
+
+Also, there is a mailing list mondo-devel@lists.sourceforge.net. Please go to
+https://lists.sourceforge.net/lists/listinfo/mondo-devel for further
+information and the opportunity to subscribe to or unsubscribe from the list.

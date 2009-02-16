@@ -1,0 +1,40 @@
+README for mondo/mindi usage with tools to backup Hardware configuration
+
+Some Hardware Manufacturers such as HP provide tools to store the Hardware configuration of their systems, such as the BIOS setup, the RAID setup, ...
+
+Mindi has a script able to store the Hardware configuration and those parameters may be restored before launching mondorestore during the boot phase computed by mindi, in order to re-setup the machine as the original one.
+
+For the moment, only HP Proliant systems are supported. If you have tools to allow support for other type of machines, feel free to contribute patches to that script.
+
+If you have a Proliant system you first need to get the Smart Start Scripting Toolkit. Due to licenses issues, mindi cannot provide those tools itself. You need to get them from http://www.hp.com/servers/sstoolkit
+
+Mindi expects to find those tools under /usr/local/bin as described in the deplist.d/proliant.conf configuration file. Here are the steps to set it up correctly:
+
+Older URL:
+wget ftp://ftp.hp.com/pub/softlib2/software1/pubsw-linux/p308169895/v40154/ss-scripting-toolkit-linux-1.70.tar.gz
+wget ftp://ftp.hp.com/pub/softlib2/software1/pubsw-linux/p308169895/v43548/ss-scripting-toolkit-linux-1.81.tar.gz
+
+cd /tmp
+wget ftp://ftp.hp.com/pub/softlib2/software1/pubsw-linux/p308169895/v44247/ss-scripting-toolkit-linux-1.90.tar.gz
+mkdir ssstk
+cd ssstk
+tar xvfz ../ss-scripting-toolkit-linux-1.90.tar.gz
+cp -a utilities/hponcfg /usr/local/bin
+cp -a utilities/conrep /usr/local/bin
+cp -a utilities/conrep.xml /usr/local/bin
+cp -a utilities/cpqacuxe/cpqacuxe /usr/local/bin
+cp -a utilities/cpqacuxe/bld /usr/local/bin
+mv /usr/local/bin/bld/*.so /usr/local/lib
+echo /usr/local/lib >> /etc/ld.so.conf
+ldconfig
+
+You're now ready to check your configuration by running:
+mindi-bkphw /var/cache/mindi /etc/mindi
+[First parameter is the directory where files will be generated,
+ Second parameter is the directory of the file proliant.files is located]
+
+For these tools to work you may have to install additional packages such as hpasm and hprsm from the HP Web site, as well as some libstdc++ compatibility packages (compat-libstdc++-33 and compat-libstdc++-296 on RHEL 5 e.g.)
+
+In order to have a working hponcfg binary you also need to install the hprsm/hpasm packages from HP Web site. Refer to http://welcome.hp.com/country/us/en/support.html?pageDisplay=drivers
+
+2007-05-30 Initial file
