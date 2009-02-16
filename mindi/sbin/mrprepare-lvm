@@ -14,14 +14,11 @@ use strict 'vars';
 use Getopt::Long qw(:config auto_abbrev no_ignore_case);
 use Data::Dumper;
 use English;
-use File::Basename;
-use File::Copy;
-use File::stat;
-use File::Temp qw(tempdir);
-use POSIX qw(strftime);
 use lib qw (lib);
 use ProjectBuilder::Base;
 use ProjectBuilder::Distribution;
+use MondoRescue::Base;
+use MondoRescue::Mindi::LVM;
 
 =pod
 
@@ -148,8 +145,6 @@ my $MINDI_SBIN = "$MINDI_PREFIX/sbin";
 pb_temp_init();
 
 # -------------------------------- main -----------------------------------
-my ($lvmver,$lvmcmd) = mr_lvm_check();
-
 # Where to send the output
 my $OUTPUT = \*STDOUT;
 if (defined $opts{'o'}) {
@@ -164,65 +159,9 @@ if (defined $opts{'i'}) {
 	$INPUT = \*INPUT;
 }
 
+mr_lvm_prepare($INPUT,$OUTPUT,$mrmult);
 
-# Generate the startup scrit needed to restore LVM conf
-# from what is given on input
-# Multiply by the multiplier given in input or 1 of none
-print $OUTPUT "# Desactivate Volume Groups\n";
-print $OUTPUT "$lvmcmd vgchange -an\n";
-print $OUTPUT "\n";
-
-my $firsttime = 0;
-while (<INPUT>) {
-	if (/^PV:/) {
-		my ($tag,$pvname,$vgname,$pvsize,$ipvn,$pvstat,$pvna,$lvnum,$pesize,$petot,$pefree,$pelloc) = split(/:/);
-		print $OUTPUT "# Creating Physical Volumes $pvname\n";
-		print $OUTPUT "$lvmcmd pvcreate -ff -y -s ".$pesize*$mrmult." $pvname\n";
-		print $OUTPUT "\n";
-	} elsif (/^VG:/) {
-		my ($tag,$vgname,$vgaccess,$vgstat,$vgnum,$lvmaxnum,$lvnum,$ocalvinvg,$lvmaxsize,$pvmaxnum,$cnumpv,$anumpv,$vgsize,$pesize,$penum,$pealloc,$pefree,$uuid) = split(/:/);
-		if ($lvmver < 2) {
-			print $OUTPUT "# Removing device first as LVM v1 doesn't do it\n";
-			print $OUTPUT "rm -Rf /dev/$vgname\n";
-		}
-		$lvmaxnum = 255 if ($lvmaxnum > 256);
-		$pvmaxnum = 255 if ($pvmaxnum > 256);
-		print $OUTPUT "# Create Volume Group $vgname\n";
-		# Pb sur pesize unite ?
-		print $OUTPUT "$lvmcmd vgcreate $vgname -p $pvmaxnum -s $pesize -l $lvmaxnum\n";
-		print $OUTPUT "\n";
-	} elsif (/^LV:/) {
-		if ($firsttime eq 0) {
-			print $OUTPUT "\n";
-			print $OUTPUT "# Activate All Volume Groups\n";
-			print $OUTPUT "$lvmcmd vgchange -ay\n";
-			print $OUTPUT "\n";
-			$firsttime = 1;
-		}
-		my ($tag,$lvname,$vgname,$lvaccess,$lvstat,$lvnum,$oclv,$lvsize,$leinlv,$lealloc,$allocpol,$readahead,$major,$minor) = split(/:/);
-		print $OUTPUT "# Create Logical Volume $lvname\n";
-		print $OUTPUT "$lvmcmd lvcreate -n $lvname -L ".$lvsize*$mrmult." -r $readahead $vgname\n";
-		#[ "$stripes" ]    && output="$output -i $stripes"
-		#[ "$stripesize" ] && output="$output -I $stripesize"
-	}
-}
-print $OUTPUT "\n";
-print $OUTPUT "# Scanning again Volume Groups\n";
-print $OUTPUT "$lvmcmd vgscan\n";
-print $OUTPUT "\n";
-
-
+close($INPUT);
+close($OUTPUT);
 #WriteShutdownScript
 mr_exit(0,"End of mrprepare-lvm");
-
-sub mr_exit {
-
-my $code = shift;
-my $msg = shift || "";
-
-close(OUTPUT);
-print $msg."\n";
-die "ERROR returned\n" if ($code < 0);
-print "No LVM handling\n" if ($code > 0);
-exit(0);
-}

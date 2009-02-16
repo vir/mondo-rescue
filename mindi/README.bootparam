@@ -1,0 +1,4 @@
+At restore time, multiple parameters are available to modify how the restore will act:
+
+usb=/dev/xxx
+	Use thet USB device name as the place to look for backup content. The way drivers are loaded may lead that to the fact you have a different device name at restore time, compared to the one you used at backup time, making mondorestore unable to use the right device natively. This helper corrects that. Pass to it the device name, not the partition name. Example: usb=/dev/sdb

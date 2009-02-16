@@ -1,0 +1,8 @@
+Basic Installation
+==================
+
+tar xvfz perl-MondoRescue-1.0.tar.gz
+cd perl-MondoRescue-1.0
+perl Makefile.PL
+make 
+make install

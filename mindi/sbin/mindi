@@ -17,13 +17,15 @@ use English;
 use File::Basename;
 use File::Copy;
 use File::stat;
-use File::Temp qw(tempdir);
-use POSIX qw(strftime);
 use Digest::MD5 qw(md5_hex);
 use lib qw (lib);
+use POSIX qw(strftime);
 use ProjectBuilder::Base;
 use ProjectBuilder::Conf;
 use ProjectBuilder::Distribution;
+use ProjectBuilder::Display;
+use MondoRescue::Mindi::LVM;
+use MondoRescue::Base;
 
 # Global variables
 my %opts;					# CLI Options
@@ -160,9 +162,9 @@ if (defined $opts{'i'}) {
 # Global variables
 #
 my $MINDI_VERSION = "PBVER-rPBREV";
-my $MINDI_PREFIX = "PBPREFIX";
-my $MINDI_CONF = "PBCONF";
-my $MINDI_LIB = "PBLIB";
+my $MINDI_PREFIX = "XXX";
+my $MINDI_CONF = "YYY";
+my $MINDI_LIB = "LLL";
 my $MINDI_SBIN = "$MINDI_PREFIX/sbin";
 my $MINDI_FDISK = "$MINDI_SBIN/parted2fdik";
 my $MINDI_DEPLIST = "$MINDI_CONF/deplist.d";
@@ -245,15 +247,8 @@ pb_mkdir_p($mr_cache_dir);
 # 
 # LVM setup
 #
-my $LVM = "none";
-my $LVMCMD = "";
-if (-d "/proc/lvm") {
-	# Version 1
-	$LVM = "v1";
-} elsif (-d "/dev/mapper") {
-	# Version 2
-	$LVM = "v2";
-	$LVMCMD = "lvm";
-}	
-pb_log(0,"LVM set to $LVM");
+my ($lvmver,$lvmcmd) = mr_lvm_check();
+
+pb_log(0,"LVM $lvmver command set to $lvmcmd");
 pb_log(0,"-------------------------------------");
+mr_exit(0);
