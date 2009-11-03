@@ -18,6 +18,8 @@ It should
 
 	- get the boot loader info
 
+	= Thee steps should be isolated in a lower stack (MondoRescue::Inventory) to be usable elsewhere
+	- get all the FW info (when available)
 	- get all the HW disk info (including Raid controllers)
 	- get all the SW disk info (partitions)
 	- get all logical layer info (LVM, EVMS, ...)
