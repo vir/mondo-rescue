@@ -58,11 +58,27 @@ sub mr_inv_hw {
 	# Partitions
 	# FS/swaps
 	# LVM / ...
+	# PCI / USB / lssd / ...
 	# messages/dmesg
 	# Kernel / Initrd
 	# Kernel Modules
 	# cmdline
+}
 
+sub mr_inv_hw_context {
+
+my %pb;
+my ($ddir, $dver, $dfam);
+my $cmdline = "/dev/null";
+($ddir, $dver, $dfam, $pb{'dtype'}, $pb{'suf'}, $pb{'upd'}, $pb{'arch'}) = pb_distro_init();
+pb_log(2,"DEBUG: distro tuple: ".Dumper($ddir, $dver, $dfam, $pb{'dtype'}, $pb{'suf'})."\n");
+
+if (($pb{{'dtype'} eq "rpm") || ($pb{{'dtype'} eq "deb") || ($pb{{'dtype'} eq "ebuild") || ($pb{{'dtype'} eq "tgz")) {
+	cmdline = "/proc/cmdline";
+} elsif ($pb{{'dtype'} eq "pkg") {
+	cmdline = "/proc/cmdline";
+}
+return(pb_get_content($cmdline));
 }
 
 =item B<mr_inv_fw>
