@@ -136,33 +136,44 @@ It returns 1 parameters, the LVM version or 0 if no LVM
 sub mr_lvm_analyze {
 
 my $OUTPUT = shift;
+my $lvm;
 
 my ($lvmver,$lvmcmd) = mr_lvm_check();
 return(0) if ($lvmver == 0);
 
-print $OUTPUT "LVM:$lvmver";
+print $OUTPUT "LVM:$lvmver\n";
 
 # Analyze the existing physical volumes
-open(LVM,$lvmcmd."pvdisplay -c |") || mr_exit(-1,"Unable to execute ".$lvmcmd."pvdisplay -c");
+#open(LVM,$lvmcmd."pvdisplay -c |") || mr_exit(-1,"Unable to execute ".$lvmcmd."pvdisplay -c");
+open(LVM,$lvmcmd."pvs --noheadings --nosuffix --units m --separator : |") || mr_exit(-1,"Unable to execute ".$lvmcmd."pvs");
 while (<LVM>) {
+		s/^[\s]*//;
+		my ($pv,$vg,$foo,$foo2,$size,$foo3) = split(/:/);
+		$lvm->{$vg}->{'pv'}[$lvm->{$vg}->{'pvnum'}] = $pv;
+		$lvm->{$vg}->{'pvnum'}++;
+		$lvm->{$vg}->{$pv}->{'size'} = $size;
 		print $OUTPUT "PV:$_";
 }
 close(LVM);
 
 # Analyze the existing volume groups
-open(LVM,$lvmcmd."vgdisplay -c |") || mr_exit(-1,"Unable to execute ".$lvmcmd."vgdisplay -c");
+#open(LVM,$lvmcmd."vgdisplay -c |") || mr_exit(-1,"Unable to execute ".$lvmcmd."vgdisplay -c");
+open(LVM,$lvmcmd."vgs --noheadings --nosuffix --units m --separator : |") || mr_exit(-1,"Unable to execute ".$lvmcmd."vgs");
 while (<LVM>) {
+		s/^[\s]*//;
 		print $OUTPUT "VG:$_";
 }
 close(LVM);
 
 # Analyze the existing logical volumes
-open(LVM,$lvmcmd."lvdisplay -c |") || mr_exit(-1,"Unable to execute ".$lvmcmd."lvdisplay -c");
+#open(LVM,$lvmcmd."lvdisplay -c |") || mr_exit(-1,"Unable to execute ".$lvmcmd."lvdisplay -c");
+open(LVM,$lvmcmd."lvs --noheadings --nosuffix --units m --separator : |") || mr_exit(-1,"Unable to execute ".$lvmcmd."lvs");
 while (<LVM>) {
+		s/^[\s]*//;
 		print $OUTPUT "LV:$_";
 }
 close(LVM);
-return($lvmver);
+return($lvm);
 }
 
 
