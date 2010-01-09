@@ -140,9 +140,9 @@ if (defined $opts{'o'}) {
 	$OUTPUT = \*OUTPUT;
 }
 
-my $ret = mr_lvm_analyze($OUTPUT);
+my $lvmver = mr_lvm_analyze($OUTPUT);
 
-if ($ret == 0) {
+if ($lvmver == 0) {
 	pb_log(1,"No LVM handling") 
 } else {
 	pb_log(1,"LVM v$lvmver Structure Analyzed") 
