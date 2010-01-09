@@ -7,13 +7,13 @@ WriteMakefile(
     NAME         => 'PBPKG',
     DISTNAME     => 'PBPKG',
     VERSION      => 'PBVER',
-    INST_SCRIPT  => 'blib/bin',
+    INST_SCRIPT  => 'blib/sbin',
 	INSTALLDIRS  => 'perl',
     PREREQ_PM    => {
 			#HTTP::Headers                    => 1.59,
 			#Template                         => 0,
     },    # e.g., Module::Name => 1.1
-	#ABSTRACT_FROM => 'bin/pb',   # retrieve abstract from module
+	#ABSTRACT_FROM => 'sbin/mindi',   # retrieve abstract from module
     AUTHOR        => 'Bruno Cornec <bruno#mondorescue.org>',
 	EXE_FILES     => [ qw( sbin/mindi sbin/mranalyze-lvm sbin/mrprepare-lvm ) ],
 	MAN1PODS      => { 

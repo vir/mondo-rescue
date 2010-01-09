@@ -27,7 +27,7 @@ use Exporter;
 # any code which uses this module.
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw(mr_exit);
+our @EXPORT = qw(mr_init mr_exit);
 
 =pod
 
@@ -43,6 +43,23 @@ This modules provides low level and generic functions for the Mondorescue projec
 
 =over 4
 
+=item B<mr_init>
+
+This function initialize MondoRescue, point to the right conf files, setup stuff
+It takes 1 parameter, the message to print if needed
+
+=cut
+
+sub mr_exit {
+
+my $msg = shift || "";
+
+if (defined $msg) {
+	pb_log($pbdebug,$msg);
+}
+
+pb_conf_init();
+}
 =item B<mr_exit>
 
 This function closes opened files, clean up the environment and exits MondoRescue
