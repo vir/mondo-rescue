@@ -62,6 +62,9 @@ if (defined $msg) {
 # Get the various location determined at installation time
 my ($confdir,$localdir,$pbproj) = mr_dynconf_init();
 
+# Temp dir
+pb_temp_init();
+
 # First use the main configuration file
 pb_conf_init($pbproj);
 pb_conf_add("$confdir/$pbproj.conf");

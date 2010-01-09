@@ -15,6 +15,7 @@ use English;
 use lib qw (lib);
 use ProjectBuilder::Base;
 use ProjectBuilder::Conf;
+use MondoRescue::Base;
 
 # Inherit from the "Exporter" module which handles exporting functions.
 
@@ -57,60 +58,68 @@ my $lvmproc = $lvmproc_t->{$ENV{PBPROJ}};
 my $lvmcmd = $lvmcmd_t->{$ENV{PBPROJ}};
 my $lvmpath = $lvmpath_t->{$ENV{PBPROJ}};
 
+# That file is not mandatory anymore
 if (! -x $lvmproc) {
-	pb_log(1,"$lvmproc doesn't exist.");
-	return(0,undef);
+	pb_log(1,"$lvmproc doesn't exist\n");
+} else {
+	# Check LVM volumes presence
+	pb_log(2,"Checking with $lvmproc\n");
+	open(LVM,$lvmproc) || mr_exit(-1,"Unable to open $lvmproc");
+	while (<LVM>) {
+		if (/0 VGs 0 PVs 0 LVs/) {
+			pb_log(1,"No LVM volumes found in $lvmproc\n");
+			return(0,undef);
+		}
 	}
-
-# Check LVM volumes presence
-open(LVM,$lvmproc) || mr_exit(-1,"Unable to open $lvmproc");
-while (<LVM>) {
-	if (/0 VGs 0 PVs 0 LVs/) {
-		pb_log(1,"No LVM volumes found in $lvmproc");
-		return(0,undef);
-	}
+	close(LVM);
 }
-close(LVM);
 
 # Check LVM version
-my $lvmver=0;
-if (-x $lvmds ) {
+my $lvmver = 0;
+if (-x $lvmds) {
+	pb_log(2,"Checking with $lvmds\n");
 	open(LVM,"$lvmds --help 2>&1 |") || mr_exit(-1,"Unable to execute $lvmds");
 	while (<LVM>) {
 		if (/Logical Volume Manager/ || /LVM version:/) {
 				$lvmver = $_;
+				chomp($lvmver);
 				$lvmver =~ s/:([0-9])\..*/$1/;
 		}
 	}
+	close(LVM);
+	pb_log(2,"Found a LVM version of $lvmver with $lvmds --help\n");
 }
-close(LVM);
 
 if ($lvmver == 0) {
-	# Still not found
+	pb_log(2,"LVM version value is still not known\n");
 	if (-x $lvmcmd) {
+		pb_log(2,"Checking with $lvmcmd\n");
 		open(LVM,"$lvmcmd version |") || mr_exit(-1,"Unable to execute $lvmcmd");
 		while (<LVM>) {
 			if (/LVM version/) {
 				$lvmver = $_;
-				$lvmver =~ s/LVM version ([0-9])\..*/$1/;
+				chomp($lvmver);
+				$lvmver =~ s/:([0-9])\..*/$1/;
+				$lvmver =~ s/[\s]*LVM version[:]*[\s]+([0-9])\..*/$1/;
 			}
 		}
 		close(LVM);
+		pb_log(2,"Found a LVM version of $lvmver with $lvmcmd version\n");
 	}
 }
 
 if ($lvmver == 0) {
 	# Still not found
-	mr_exit(-1,"Unable to determine LVM version.\nPlease report to the dev team with the result of the commands\n$lvmds and $lvmcmd");
+	mr_exit(-1,"Unable to determine LVM version.\nPlease report to the dev team with the result of the commands:\n$lvmds --help and $lvmcmd version\n");
 } elsif ($lvmver == 1) {
 	$lvmcmd = "$lvmpath";
 } elsif ($lvmver == 2) {
 	$lvmcmd .= " ";
 } else {
-	pb_log(0,"Unknown LVM version $lvmver");
+	pb_log(0,"Unknown LVM version $lvmver\n");
 }
 # Here $lvmcmd contains a full path name
-pb_log(1,"Found LVM version $lvmver");
+pb_log(1,"Found LVM version $lvmver\n");
 return ($lvmver,$lvmcmd);
 
 }
@@ -202,7 +211,7 @@ while (<$INPUT>) {
 		print $OUTPUT $lvmcmd."vgcreate $vgname -p $pvmaxnum -s $pesize -l $lvmaxnum\n";
 		print $OUTPUT "\n";
 	} elsif (/^LV:/) {
-		if ($firsttime eq 0) {
+		if ($firsttime == 0) {
 			print $OUTPUT "\n";
 			print $OUTPUT "# Activate All Volume Groups\n";
 			print $OUTPUT $lvmcmd."vgchange -ay\n";
