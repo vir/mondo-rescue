@@ -127,12 +127,8 @@ my $MINDI_PREFIX = "PBPREFIX";
 my $MINDI_CONF = "PBCONF";
 my $MINDI_LIB = "PBLIB";
 my $MINDI_SBIN = "$MINDI_PREFIX/sbin";
-# 
-# Temp dir
-#
-pb_temp_init();
 
-# MondoRescue init
+# Init
 mr_init();
 
 # -------------------------------- main -----------------------------------
@@ -150,5 +146,7 @@ if ($lvmver == 0) {
 } else {
 	pb_log(1,"LVM v$lvmver Structure Analyzed") 
 }
-close($OUTPUT);
+if (defined $opts{'o'}) {
+	close($OUTPUT);
+}
 mr_exit(0,undef);
