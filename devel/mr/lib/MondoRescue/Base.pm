@@ -18,6 +18,7 @@ use POSIX qw(strftime);
 use lib qw (lib);
 use ProjectBuilder::Base;
 use ProjectBuilder::Conf;
+use MondoRescue::DynConf;
 
 # Inherit from the "Exporter" module which handles exporting functions.
 
@@ -50,7 +51,7 @@ It takes 1 parameter, the message to print if needed
 
 =cut
 
-sub mr_exit {
+sub mr_init {
 
 my $msg = shift || "";
 
@@ -59,10 +60,11 @@ if (defined $msg) {
 }
 
 # Get the various location determined at installation time
-my ($confdir,$localdir,$pbproj) = mr_dyn_conf();
+my ($confdir,$localdir,$pbproj) = mr_dynconf_init();
 
 # First use the main configuration file
-pb_conf_add("$confdir/$pbproj/$pbproj.conf");
+pb_conf_init($pbproj);
+pb_conf_add("$confdir/$pbproj.conf");
 }
 
 =item B<mr_exit>

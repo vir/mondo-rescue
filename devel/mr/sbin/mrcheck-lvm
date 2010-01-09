@@ -18,7 +18,7 @@ use lib qw (lib);
 use ProjectBuilder::Base;
 use ProjectBuilder::Distribution;
 use MondoRescue::Base;
-use MondoRescue::Mindi::LVM;
+use MondoRescue::LVM;
 
 =pod
 

@@ -7,7 +7,7 @@
 # Copyright B. Cornec 2008
 # Provided under the GPL v2
 
-package MondoRescue::Mindi::LVM;
+package MondoRescue::LVM;
 
 use strict 'vars';
 use Data::Dumper;
@@ -52,10 +52,10 @@ sub mr_lvm_check {
 
 # Get params from the conf file
 my ($lvmds_t,$lvmproc_t,$lvmcmd_t,$lvmpath_t) = pb_conf_get("mr_lvmdiskscan","mr_lvmprocfile","mr_lvmcmd","mr_lvmpath");
-my $lvmds = $lvmds_t->{'mindi'};
-my $lvmproc = $lvmproc_t->{'mindi'};
-my $lvmcmd = $lvmcmd_t->{'mindi'};
-my $lvmpath = $lvmpath_t->{'mindi'};
+my $lvmds = $lvmds_t->{$ENV{PBPROJ}};
+my $lvmproc = $lvmproc_t->{$ENV{PBPROJ}};
+my $lvmcmd = $lvmcmd_t->{$ENV{PBPROJ}};
+my $lvmpath = $lvmpath_t->{$ENV{PBPROJ}};
 
 if (! -x $lvmproc) {
 	pb_log(1,"$lvmproc doesn't exist.");
