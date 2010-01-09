@@ -15,8 +15,14 @@ WriteMakefile(
     },    # e.g., Module::Name => 1.1
 	#ABSTRACT_FROM => 'bin/',   # retrieve abstract from module
     AUTHOR        => 'Bruno Cornec <bruno#mondorescue.org>',
-	EXE_FILES     => [ qw(  ) ],
+	EXE_FILES     => [ qw( sbin/mranalyze-lvm sbin/mrcheck-lvm ) ],
+	MAN1PODS      => { 
+			'sbin/mranalyze-lvm' => '$(INST_MAN1DIR)/mranalyze-lvm.$(MAN1EXT)', 
+			'sbin/mrcheck-lvm' => '$(INST_MAN1DIR)/mranalyze-lvm.$(MAN1EXT)', 
+					},
 	MAN3PODS      => {	
 						'lib/MondoRescue/Base.pm' => '$(INST_MAN3DIR)/MondoRescue::Base.$(MAN3EXT)', 
+						'lib/MondoRescue/LVM.pm' => '$(INST_MAN3DIR)/MondoRescue::LVM.$(MAN3EXT)', 
+						'lib/MondoRescue/Inventory.pm' => '$(INST_MAN3DIR)/MondoRescue::Inventory.$(MAN3EXT)', 
 				},
 );

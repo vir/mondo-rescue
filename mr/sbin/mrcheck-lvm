@@ -1,0 +1,151 @@
+#!/usr/bin/perl -w
+#
+# Analyze the LVM configuration
+# and store the configuration for restore time
+#
+# $Id$
+#
+# Copyright B. Cornec 2008
+# Provided under the GPL v2
+
+# Syntax: see below
+
+use strict 'vars';
+use Getopt::Long qw(:config auto_abbrev no_ignore_case);
+use Data::Dumper;
+use English;
+use lib qw (lib);
+use ProjectBuilder::Base;
+use ProjectBuilder::Distribution;
+use MondoRescue::Base;
+use MondoRescue::Mindi::LVM;
+
+=pod
+
+=head1 NAME
+
+mranalyze-lvm - A Mindi Tool to analyze the LVM configuration and store it
+
+=head1 DESCRIPTION
+
+B<mranalyze-lvm> prints all the information related to the LVM configuration that may be used by a restoration process
+
+=head1 SYNOPSIS
+
+mranalyze-lvm [-v]|[-q]|[-h]|[--man][-o outputfile][-l logfile]
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-v|--verbose>
+
+Be more verbose
+
+=item B<-q|--quiet>
+
+Do not print any output.
+
+=item B<-h|--help>
+
+Print a brief help message and exits.
+
+=item B<--man>
+
+Prints the manual page and exits.
+
+=item B<-o|--output>
+
+Name of the file to generate. Use stdout by default
+
+The output format is:
+LVM:lvm-version
+PV:pv-information as done with pvdisplay -c
+VG:vg-information as done with vgdisplay -c
+LV:lv-information as done with lvdisplay -c
+
+=back 
+
+=head1 WEB SITES
+
+The main Web site of the project is available at L<http://www.mondorescue.org/>. Bug reports should be filled using the trac instance of the project at L<http://trac.mondorescue.org/>.
+
+=head1 USER MAILING LIST
+
+The mailing list of the project is available at L<mailto:mondo@lists.sf.net>
+ 
+=head1 AUTHORS
+
+The Mondorescue.org team L<http://www.mondorescue.org/> lead by Bruno Cornec L<mailto:bruno@mondorescue.org>.
+
+=head1 COPYRIGHT
+
+Analyze-LVM is distributed under the GPL v2.0 license
+described in the file C<COPYING> included with the distribution.
+
+=cut
+
+
+# ---------------------------------------------------------------------------
+# Globals
+my %opts;					# CLI Options
+
+# Initialize the syntax string
+
+pb_syntax_init("mranalyze-lvm Version PBVER-rPBREV\n");
+
+# Handle options
+#
+GetOptions("help|?|h" => \$opts{'h'}, 
+		"man" => \$opts{'man'},
+		"verbose|v+" => \$opts{'v'},
+		"quiet|q" => \$opts{'q'},
+		"output|o=s" => \$opts{'o'},
+		"log-files|l=s" => \$opts{'l'},
+		"version|V" => \$opts{'V'},
+) || pb_syntax(-1,0);
+
+# easy options
+if (defined $opts{'h'}) {
+	pb_syntax(0,1);
+}
+if (defined $opts{'man'}) {
+	pb_syntax(0,2);
+}
+if (defined $opts{'v'}) {
+	$pbdebug = $opts{'v'};
+}
+if (defined $opts{'q'}) {
+	$pbdebug=-1;
+}
+
+#
+# Global variables
+#
+my $MINDI_VERSION = "PBVER-rPBREV";
+my $MINDI_PREFIX = "PBPREFIX";
+my $MINDI_CONF = "PBCONF";
+my $MINDI_LIB = "PBLIB";
+my $MINDI_SBIN = "$MINDI_PREFIX/sbin";
+# 
+# Temp dir
+#
+pb_temp_init();
+
+# -------------------------------- main -----------------------------------
+# Where to send the output
+my $OUTPUT = \*STDOUT;
+if (defined $opts{'o'}) {
+	open(OUTPUT, "> $opts{'o'}") || mr_exit(-1, "Unable to write to $opts{'o'}");
+	$OUTPUT = \*OUTPUT;
+}
+
+my $lvmver = mr_lvm_analyze($OUTPUT);
+
+if ($lvmver == 0) {
+	pb_log(1,"No LVM handling") 
+} else {
+	pb_log(1,"LVM v$lvmver Structure Analyzed") 
+}
+close($OUTPUT);
+mr_exit(0,undef);
