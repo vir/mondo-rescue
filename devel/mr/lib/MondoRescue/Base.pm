@@ -58,8 +58,13 @@ if (defined $msg) {
 	pb_log($pbdebug,$msg);
 }
 
-pb_conf_init();
+# Get the various location determined at installation time
+my ($confdir,$localdir,$pbproj) = mr_dyn_conf();
+
+# First use the main configuration file
+pb_conf_add("$confdir/$pbproj/$pbproj.conf");
 }
+
 =item B<mr_exit>
 
 This function closes opened files, clean up the environment and exits MondoRescue

@@ -18,10 +18,9 @@ WriteMakefile(
 	EXE_FILES     => [ qw( sbin/mindi sbin/mranalyze-lvm sbin/mrprepare-lvm ) ],
 	MAN1PODS      => { 
 			'sbin/mindi' => '$(INST_MAN1DIR)/mindi.$(MAN1EXT)', 
-			'sbin/mranalyze-lvm' => '$(INST_MAN1DIR)/mranalyze-lvm.$(MAN1EXT)', 
 			'sbin/mrprepare-lvm' => '$(INST_MAN1DIR)/mrprepare-lvm.$(MAN1EXT)', 
 					},
-	MAN3PODS      => {	
-			'lib/MondoRescue/Mindi/LVM.pm' => '$(INST_MAN3DIR)/MondoRescue::Mindi::LVM.$(MAN3EXT)',
-					},
+	#MAN3PODS      => {	
+			#'lib/MondoRescue/Mindi/LVM.pm' => '$(INST_MAN3DIR)/MondoRescue::Mindi::LVM.$(MAN3EXT)',
+			#},
 );
