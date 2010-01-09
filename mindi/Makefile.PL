@@ -15,7 +15,7 @@ WriteMakefile(
     },    # e.g., Module::Name => 1.1
 	#ABSTRACT_FROM => 'sbin/mindi',   # retrieve abstract from module
     AUTHOR        => 'Bruno Cornec <bruno#mondorescue.org>',
-	EXE_FILES     => [ qw( sbin/mindi sbin/mranalyze-lvm sbin/mrprepare-lvm ) ],
+	EXE_FILES     => [ qw( sbin/mindi sbin/mrprepare-lvm ) ],
 	MAN1PODS      => { 
 			'sbin/mindi' => '$(INST_MAN1DIR)/mindi.$(MAN1EXT)', 
 			'sbin/mrprepare-lvm' => '$(INST_MAN1DIR)/mrprepare-lvm.$(MAN1EXT)', 

@@ -24,7 +24,7 @@ use ProjectBuilder::Base;
 use ProjectBuilder::Conf;
 use ProjectBuilder::Distribution;
 use ProjectBuilder::Display;
-use MondoRescue::Mindi::LVM;
+use MondoRescue::LVM;
 use MondoRescue::Base;
 
 # Global variables

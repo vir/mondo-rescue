@@ -43,7 +43,7 @@ echo "Copying files ..."
 #install -m 644 deplist.txt udev.files proliant.files $conf
 
 cp etc/PBPROJ.conf $conf
-cat > $PERLDIR/MondoRescue/DynConf.pm << EOF
+cat > $HEAD$PERLDIR/MondoRescue/DynConf.pm << EOF
 #!/usr/bin/perl -w
 #
 # Declare variables for the MondoRescue project
@@ -68,7 +68,7 @@ our @EXPORT = qw(mr_dynconf_init);
 # the LOCALDIR
 sub mr_dynconf_init {
 
-return($subconf,$sublocal,"PBPROJ");
+return("$subconf","$sublocal","PBPROJ");
 }
 1;
 EOF
