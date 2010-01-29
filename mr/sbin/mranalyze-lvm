@@ -139,13 +139,21 @@ if (defined $opts{'o'}) {
 	$OUTPUT = \*OUTPUT;
 }
 
-my $lvmver = mr_lvm_analyze($OUTPUT);
+my $lvm = mr_lvm_analyze($OUTPUT);
 
-if ($lvmver == 0) {
-	pb_log(1,"No LVM handling") 
+if (not defined $lvm) {
+	pb_log(1,"No LVM handling\n") ;
 } else {
-	pb_log(1,"LVM v$lvmver Structure Analyzed") 
+	pb_log(1,"LVM Structure :".Dumper($lvm)."\n");
 }
+
+open(LVM, "> /tmp/lvm.out") || mr_exit(-1, "Unable to write to /tmp/lvm.out");
+$lvm = mr_lvm_analyze(\*LVM);
+close(LVM);
+open(LVM, "/tmp/lvm.out") || mr_exit(-1, "Unable to read to /tmp/lvm.out");
+$lvm = mr_lvm_prepare(\*LVM,$OUTPUT,1);
+close(LVM);
+
 if (defined $opts{'o'}) {
 	close($OUTPUT);
 }
