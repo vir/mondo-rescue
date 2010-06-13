@@ -276,16 +276,13 @@ open(LVM,$lvmcmd."lvs --noheadings --nosuffix --units m --separator : -o vg_name
 while (<LVM>) {
 	s/^[\s]*//;
 
-	my ($vg_name,$lv_uuid,$lv_name,$lv_attr,$lv_major,$lv_minor,$lv_read_ahead,$lv_kernel_major,$lv_kernel_minor,$lv_kernel_read_ahead,$lv_size,$seg_count,$origin,$origin_size,$snap_percent,$copy_percent,$move_pv,$convert_lv,$lv_tags,$mirror_log,$modules) = split(/:/);
 =pod
 
 The structure contains an array of LVs called lvs and starting at 1, containing the name of the PV as provided by the pv_name attribute of the pvs command
-pv_name              - Name of the physical volume PV
 
 =cut
 
-	# Array of PVs for that VG
-	$lvm->{$vg_name}->{'pvs'}->[$lvm->{$vg_name}->{'pvnum'}] = $pv_name;
+	my ($vg_name,$lv_uuid,$lv_name,$lv_attr,$lv_major,$lv_minor,$lv_read_ahead,$lv_kernel_major,$lv_kernel_minor,$lv_kernel_read_ahead,$lv_size,$seg_count,$origin,$origin_size,$snap_percent,$copy_percent,$move_pv,$convert_lv,$lv_tags,$mirror_log,$modules) = split(/:/);
 
 =pod
 
