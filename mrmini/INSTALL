@@ -1,34 +1,7 @@
-MINDI LINUX                   INSTALL                               10/21/2002
+MRMINI Installation instructions
 
-To install, please download the tarball to /tmp and then type:-
-# cd /tmp
-# tar -zxvf mindi-0.6x.tgz
-# cd mindi-0.6x
-# ./install.sh
+Run:
 
-Or install the RPM:-
-# rpm -i mindi-0.7x-y.i386.rpm
-
-Replace 'x' with the last digit of the latest version (e.g. '0' of 0.70).
-Replace 'y' with the revision# (e.g. '1' of '0.70-1.i386.rpm').
-
-To run the program, type:-
-# mindi
-
-Mindi will:-
-- locate your kernel and modules
-- put together a package of all the tools you are likely to need
-- generate some floppy disk images
-- offer to write the images to disks for you
-
-To add files to the dependency list, you may edit
-/etc/deplist.txt before running Mindi.
-
-Problems? Questions? Comments? E-mail the mailing list. :) If you are reporting 
-a bug or a problem then please e-mail a copy of /var/log/mindi.log to the
-mailing list or I shall be unable to help. PLEASE read the FAQ, the manual
-and the mailing list before you e-mail me. Thanks.
-
-                                                             Hugo Rabson
-                                                         <hugo@firstlinux.net>
-
+perl Makefile.PL
+make
+make install

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 #
-# Mindi main application
+# mrmini main application
 # Mini-distribution maker for the MondoRescue project
 #
 # $Id$
@@ -36,19 +36,19 @@ my $mr_date = strftime("%Y-%m-%d %H:%M:%S", @date);
 
 =head1 NAME
 
-Mindi - Tool to create a boot environment from a distribution
+mrmini - Tool to create a boot environment from a distribution
 
 =head1 DESCRIPTION
 
-B<mindi> creates a bootable ISO/USB image using files from the system it runs on. B<mindi> will try hard to reproduce the environment of its host system including loaded modules to ensure that the system can be booted properly from the created rescue media. B<mindi> is used by monodarchive(8) to produce the required USB/ISO images but can also be used stand-alone.
+B<mrmini> creates a bootable ISO/USB image using files from the system it runs on. B<mrmini> will try hard to reproduce the environment of its host system including loaded modules to ensure that the system can be booted properly from the created rescue media. B<mrmini> is used by monodarchive(8) to produce the required USB/ISO images but can also be used stand-alone.
 
-For stand-alone usage, B<mindi> may be called without any parameters or switches. It will then interactively ask the user for all information required to create a set of boot/root media. Options on the command line or a configuration file can also be used to alter the way B<mindi> is working
+For stand-alone usage, B<mrmini> may be called without any parameters or switches. It will then interactively ask the user for all information required to create a set of boot/root media. Options on the command line or a configuration file can also be used to alter the way B<mrmini> is working
 
-The probably more frequent way of calling B<mindi> is non-interactively from mondoarchive(8) using a dedicated configuration file.
+The probably more frequent way of calling B<mrmini> is non-interactively from mondoarchive(8) using a dedicated configuration file.
 
 =head1 SYNOPSIS
 
-mindi [-v]|[-q]|[-h]|[--man]
+mrmini [-v]|[-q]|[-h]|[--man]
 
 =head1 OPTIONS
 
@@ -121,7 +121,7 @@ Activate OBDR mode for tape (Bootable tape devices)
 
 =item B<-V|--version>
 
-Display mindi version and exit
+Display mrmini version and exit
 
 =cut
 		"force|f" => \$opts{'f'},
@@ -158,10 +158,10 @@ The system administrator may have a configuration file in F<$HOME/.mondorescue>.
 Here is an example of such a configuration file:
 
  # mrcachedir points to the directory where the tool will store generated content
- # If not defined, mrcachedir is under /var/cache/mindi
- mrcachedir mindi = /var/cache/mindi
+ # If not defined, mrcachedir is under /var/cache/mrmini
+ mrcachedir mrmini = /var/cache/mrmini
 
- Also look at man mindi.conf
+ Also look at man mrmini.conf
  
 =head1 AUTHORS
 
@@ -169,7 +169,7 @@ The Mondorescue.org team L<http://www.mondorescue.org/> lead by Bruno Cornec L<m
 
 =head1 COPYRIGHT
 
-Mindi is distributed under the GPL v2.0 license
+mrmini is distributed under the GPL v2.0 license
 described in the file C<COPYING> included with the distribution.
 
 =cut
@@ -178,7 +178,7 @@ described in the file C<COPYING> included with the distribution.
 
 # Initialize the syntax string
 
-pb_syntax_init("mindi Version PBVER-rPBREV\n");
+pb_syntax_init("mrmini Version PBVER-rPBREV\n");
 pb_display_init("text","");
 
 # easy options
@@ -214,13 +214,13 @@ if (defined $opts{'i'}) {
 #
 # Global variables
 #
-my $MINDI_VERSION = "PBVER-rPBREV";
-my $MINDI_PREFIX = "XXX";
-my $MINDI_CONF = "YYY";
-my $MINDI_LIB = "LLL";
-my $MINDI_SBIN = "$MINDI_PREFIX/sbin";
-my $MINDI_FDISK = "$MINDI_SBIN/parted2fdik";
-my $MINDI_DEPLIST = "$MINDI_CONF/deplist.d";
+my $MRMINI_VERSION = "PBVER-rPBREV";
+my $MRMINI_PREFIX = "XXX";
+my $MRMINI_CONF = "YYY";
+my $MRMINI_LIB = "LLL";
+my $MRMINI_SBIN = "$MRMINI_PREFIX/sbin";
+my $MRMINI_FDISK = "$MRMINI_SBIN/parted2fdik";
+my $MRMINI_DEPLIST = "$MRMINI_CONF/deplist.d";
 # Better ?
 my $ARCH = `uname -m`;
 chop($ARCH);
@@ -232,27 +232,27 @@ pb_temp_init();
 
 #
 # Conf files Management
-# the $MINDI_CONF/mondorescue.conf.dist is delivered as part of the project and
+# the $MRMINI_CONF/mondorescue.conf.dist is delivered as part of the project and
 # its checksum is verified as we need good default values that we can trust
 #
-open(MD5,"$MINDI_CONF/mondorescue.conf.dist.md5") || die "Unable to read mandatory $MINDI_CONF/mondorescue.conf.dist.md5: $!";
+open(MD5,"$MRMINI_CONF/mondorescue.conf.dist.md5") || die "Unable to read mandatory $MRMINI_CONF/mondorescue.conf.dist.md5: $!";
 my $omd5 = <MD5>;
 chop($omd5);
 close(MD5);
-open(CONF,"$MINDI_CONF/mondorescue.conf.dist") || die "Unable to read mandatory $MINDI_CONF/mondorescue.conf.dist: $!";
+open(CONF,"$MRMINI_CONF/mondorescue.conf.dist") || die "Unable to read mandatory $MRMINI_CONF/mondorescue.conf.dist: $!";
 my $md5 = Digest::MD5->new;
 binmode(CONF);
 $md5->addfile(CONF);
-die "Invalid MD5 found sum for $MINDI_CONF/mondorescue.conf.dist: $md5->hexdigest" if ($omd5 ne $md5->hexdigest);
+die "Invalid MD5 found sum for $MRMINI_CONF/mondorescue.conf.dist: $md5->hexdigest" if ($omd5 ne $md5->hexdigest);
 close(CONF);
 
 # Adds conf files in order
-pb_conf_add("$ENV{'HOME'}/.mondorescuerc","$MINDI_CONF/mondorescue.conf","$MINDI_CONF/mondorescue.conf.dist");
+pb_conf_add("$ENV{'HOME'}/.mondorescuerc","$MRMINI_CONF/mondorescue.conf","$MRMINI_CONF/mondorescue.conf.dist");
 
 #
 # Configuration parameters
 #
-$ENV{'PBPROJ'} = "mindi";
+$ENV{'PBPROJ'} = "mrmini";
 my ($mr_boot_size,$mr_boot_cd,$mr_boot_usb,$mr_boot_tape,$mr_kernel,$mr_fstab) =  pb_conf_get("mr_boot_size","mr_boot_cd","mr_boot_usb","mr_boot_tape","mr_kernel","mr_fstab");
 my ($mr_tape_mods,$mr_scsi_mods,$mr_ide_mods,$mr_pcmcia_mods,$mr_usb_mods,$mr_net_mods,$mr_cdrom_mods,$mr_deny_mods,$mr_force_mods) =  pb_conf_get("mr_tape_mods","mr_scsi_mods","mr_ide_mods","mr_pcmcia_mods","mr_usb_mods","mr_net_mods","mr_cdrom_mods","mr_extra_mods","mr_deny_mods","mr_force_mods");
 my ($mr_logfile,$mr_cache_dir,$mr_boot_msg,$mr_burn_cmd,$mr_burn_opt) = pb_conf_get("mr_logfile","mr_cache_dir","mr_boot_msg","mr_burn_cmd","mr_burn_opt");
@@ -270,25 +270,25 @@ $pbLOG = \*pbLOG;
 $pbdebug = 0  if ($pbdebug == -1);
 pb_log_init($pbdebug, $pbLOG);
 
-pb_log(0,"mindi start date: $mr_date");
+pb_log(0,"mrmini start date: $mr_date");
 pb_log(0,"-------------------------------------");
-pb_log(0,"mindi v$MINDI_VERSION");
+pb_log(0,"mrmini v$MRMINI_VERSION");
 pb_log(0,"$ARCH architecture detected");
-pb_log(0,"mindi called with the following arguments: ".join(" ",@ARGV));
+pb_log(0,"mrmini called with the following arguments: ".join(" ",@ARGV));
 pb_log(0,"-------------------------------------");
 pb_log(0,"MONDO_CACHE: $ENV{'MONDO_CACHE'}") if (defined $ENV{'MONDO_CACHE'});
-pb_log(0,"MINDI_LIB: $MINDI_LIB");
-pb_log(0,"MINDI_CONF: $MINDI_CONF");
-pb_log(0,"MINDI_SBIN: $MINDI_SBIN");
+pb_log(0,"MRMINI_LIB: $MRMINI_LIB");
+pb_log(0,"MRMINI_CONF: $MRMINI_CONF");
+pb_log(0,"MRMINI_SBIN: $MRMINI_SBIN");
 if (-r "$ENV{'HOME'}/.mondorescuerc") {
 	pb_log(0,"-------------------------------------");
 	pb_log(0,"Conf file $ENV{'HOME'}/.mondorescuerc");
 	pb_display_file("$ENV{'HOME'}/.mondorescuerc");
 }
-if (-r "$MINDI_CONF/mondorescue.conf") {
+if (-r "$MRMINI_CONF/mondorescue.conf") {
 	pb_log(0,"-------------------------------------");
-	pb_log(0,"Conf file $MINDI_CONF/mondorescue.conf");
-	pb_display_file("$MINDI_CONF/mondorescue.conf");
+	pb_log(0,"Conf file $MRMINI_CONF/mondorescue.conf");
+	pb_display_file("$MRMINI_CONF/mondorescue.conf");
 }
 pb_log(0,"-------------------------------------");
 

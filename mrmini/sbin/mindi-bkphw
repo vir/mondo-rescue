@@ -32,7 +32,7 @@ die "You need a dmidecode entry in your configuration file $conffile\n" if (! de
 die "You need dmidecode for Hardware support\n" if (! -x $dmidecode->{$pbproj});
 
 mkdir $bkpdir,0755 if (! -d $bkpdir) ;
-open(SYSTEM,"$dmidecode->{$pbproj} -s 'system-product-name' 2> /dev/null |") || die "You need a functional $dmidecode->{$pbproj} for mindi hardware support";
+open(SYSTEM,"$dmidecode->{$pbproj} -s 'system-product-name' 2> /dev/null |") || die "You need a functional $dmidecode->{$pbproj} for mrmini hardware support";
 my $productname = <SYSTEM>;
 close(SYSTEM);
 
@@ -41,10 +41,10 @@ die "ERROR: No product name found for Hardware support\n" if (not defined $produ
 chomp($productname);
 if ($productname =~ /proliant/i) {
 	print "Detected a $productname. Nice. Continue to support my job :-)\n";
-	print "Activating Proliant support for mindi\n";
+	print "Activating Proliant support for mrmini\n";
 	open(PROLIANT,"$confdir/proliant.files") || die "Unable to open $confdir/proliant.files";
 	open(TOOLS,"> $bkpdir/../tools.files") || die "Unable to open $bkpdir/../tools.files";
-	open(SCRIPT,"> $bkpdir/../mindi-rsthw") || die "Unable to open $bkpdir/../mindi-rsthw";
+	open(SCRIPT,"> $bkpdir/../mrmini-rsthw") || die "Unable to open $bkpdir/../mrmini-rsthw";
 	print SCRIPT  << 'EOF';
 #!/bin/bash
 #
@@ -64,11 +64,11 @@ EOF
 		chomp($tool);
 		$tooldir = dirname($tool);
 		if (! (-e $tool)) {
-			print "You should install the SmartStart Scripting toolkit tool $tool\nto benefit from mindi's enhanced hardware support\n";
+			print "You should install the SmartStart Scripting toolkit tool $tool\nto benefit from mrmini's enhanced hardware support\n";
 			print "Get it from http://www.hp.com/servers/sstoolkit\n";
 			next;
 		} else {
-			print "Found $tool, activating enhanced HP Proliant support in mindi\n";
+			print "Found $tool, activating enhanced HP Proliant support in mrmini\n";
 			print TOOLS "$tool\n";
 		}
 		if ($tool =~ /\/conrep$/) {
@@ -99,6 +99,6 @@ EOF
 	close(SCRIPT);
 } else {
 	print "\nWARNING: No Hardware support for $productname. Not a big issue, just less features and risks ;-)\n";
-	print "You may ask your manufacturer to contribute to the mindi project\n";
+	print "You may ask your manufacturer to contribute to the mrmini project\n";
 }
 rmdir $bkpdir if (-d $bkpdir) ;

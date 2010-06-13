@@ -1,27 +1,12 @@
 Introduction
 ============
 
-MondoRescue is the premier GPL disaster recovery suite for Linux/FreeBSD.
+MondoRescue is a GPL disaster recovery and cloning suite for Linux/FreeBSD.
 
-This is the Mindi part of MondoRescue. Mindi is responsible for creating boot
+This is the mrmini part of MondoRescue. mrmini is responsible for creating boot
 media used by MondoRescue. The part of MondoReccue responsible carrying out the
-actual backups and restores is called Mondo and available as a separate
+actual backups and restores is called mrarchive and available as a separate
 package.
-
-MondoRescue is reliable. It backs up your server or workstation to tape, CD-R,
-CD-RW, DVD, NFS or hard disk partition. In the event of catastrophic data loss,
-you will be able to restore all of your data [or as much as you want], from
-bare metal if necessary. MondoRescue is in use by numerous blue-chip
-enterprises and large organizations, dozens of smaller companies, and tens of
-thousands of users.
-
-MondoRescue is comprehensive. MondoRescue supports LVM, RAID, ext2, ext3, ext4,
-JFS, XFS, ReiserFS, VFAT, and can support additional file systems easily. It
-supports adjustments in disk geometry, including migration from non-RAID to
-RAID. MondoRescue runs on all major Linux distributions and FreeBSD and is
-getting better all the time. You may even use it to backup non-Linux
-partitions, such as NTFS.
-
 
 Installation
 ============
@@ -29,9 +14,7 @@ Installation
 You can get the latest packages from
 ftp://ftp.mondorescue.org
 
-Please see file 'INSTALL' for instructions about how to build and install
-Mindi. Note that your distribution may already contain MondoRescue, so all you
-may have to do is install the mindi package and you are all set.
+Please see file 'INSTALL' for instructions about how to build and install mrmini.
 
 
 Documentation
@@ -39,10 +22,10 @@ Documentation
 
 Various documentation is available on the MondoRescue website at 
 http://www.mondorescue.org/docs/docs.html. This documentation may also be
-available locally under /usr/share/doc/mondo-<version> or similar (or under
+available locally under /usr/share/doc/mrmini-<version> or similar (or under
 /usr/local).
 
-Further to that, there is a manpage for mindi(8).
+Further to that, there is a manpage for mrmini(8).
 
 
 Support

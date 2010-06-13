@@ -13,7 +13,7 @@ mrarchive: tool to create MondoRescue archives
 mrrestore: tool to create MondoRescue restore
 mrmini: tool to create MondoRescue mini distribution
 
-Mindi design:
+mrmini design:
 
 Goal is to create a bootable env contaning everything suited for DR/Cloning from the running system
 It should

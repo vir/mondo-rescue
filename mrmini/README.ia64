@@ -1,10 +1,12 @@
-README for mondo/mindi usage on ia64
+$Id$
 
-Linux distributions on ia64 uses a different file table format than on i386, called GPT instead of MBR. The fdisk command used by mindi/mondo to determine all aspects related to the disc hasn't been adapted yet to handle GPT. Only the parted command is able to do it.
+README for mondo/mrmini usage on ia64
 
-So a perl script called parted2fdisk.pl was written that will take as input all the order that mindi/mondo pass to fdisk, translate them to be given to parted and print the result in fdisk format. So this is a filter allowing fdisk replacement. It's only used on ia64. On other archs, parted2fdisk is a link to fdisk.
+Linux distributions on ia64 uses a different file table format than on i386, called GPT instead of MBR. The fdisk command used by mrmini/mondo to determine all aspects related to the disc hasn't been adapted yet to handle GPT. Only the parted command is able to do it.
 
-Thus mindi/mondo launched by root will pass all their call to parted2fdisk instead of the real fdisk, and be able to support the GPT format. It will call fdisk and parted for its work.
+So a perl script called parted2fdisk.pl was written that will take as input all the order that mrmini/mondo pass to fdisk, translate them to be given to parted and print the result in fdisk format. So this is a filter allowing fdisk replacement. It's only used on ia64. On other archs, parted2fdisk is a link to fdisk.
+
+Thus mrmini/mondo launched by root will pass all their call to parted2fdisk instead of the real fdisk, and be able to support the GPT format. It will call fdisk and parted for its work.
 
 To get it on the system to restore, please do the following as root:
 
@@ -18,7 +20,7 @@ The install.sh script will setup everything correctly for you.
 
 Note that parted2fdisk.pl supports currently only the -l and -s options as well as the commands p,n,d,w,t,a,q
 
-On Itanium systems you won't generally find an installed isolinux.bin file which is required by mindi to create the bootable images. You'll generally have to take an i386 package for your distribution and install it on your itanium system so that you provide the required missing file.
+On Itanium systems you won't generally find an installed isolinux.bin file which is required by mrmini to create the bootable images. You'll generally have to take an i386 package for your distribution and install it on your itanium system so that you provide the required missing file.
 
 On SLES 10, fdisk is nor provided anymore. You'll have to rebuild the util-linux package by desactivating fdisk removal in the spec file. 
 

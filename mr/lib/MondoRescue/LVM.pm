@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 #
-# Mindi subroutines related to LVM brought by the MondoRescue project
+# Subroutines related to LVM brought by the MondoRescue project
 #
 # $Id$
 #

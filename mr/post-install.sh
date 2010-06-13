@@ -37,11 +37,6 @@ echo "Creating target directories ..."
 install -m 755 -d $conf $sublocallib $sublocalshare $CACHEDIR
 
 echo "Copying files ..."
-#cp -af rootfs $sublocallib/mindi
-#chmod 755 $sublocallib/mindi/rootfs/sbin/*
-#install -m 644 msg-txt dev.tgz $sublocallib/mindi
-#install -m 644 deplist.txt udev.files proliant.files $conf
-
 cp etc/PBPROJ.conf $conf
 cat > $HEAD$PERLDIR/MondoRescue/DynConf.pm << EOF
 #!/usr/bin/perl -w
