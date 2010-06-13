@@ -1,6 +1,6 @@
 $Id$
 
-README for mondo/mindi usage with PXE
+README for mondo/mrmini usage with PXE
 
 mondorescue now supports the possibility to deploy mondo-images using the Pre eXecution Environment (PXE) standard.
 As this README only focusses on the mondorescue part, please read how to do Linux deployments with pxelinux on http://syslinux.zytor.com/pxe.php

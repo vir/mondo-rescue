@@ -1,14 +1,14 @@
-README for mondo/mindi usage with tools to backup Hardware configuration
+README for mondo/mrmini usage with tools to backup Hardware configuration
 
 Some Hardware Manufacturers such as HP provide tools to store the Hardware configuration of their systems, such as the BIOS setup, the RAID setup, ...
 
-Mindi has a script able to store the Hardware configuration and those parameters may be restored before launching mondorestore during the boot phase computed by mindi, in order to re-setup the machine as the original one.
+mrmini has a script able to store the Hardware configuration and those parameters may be restored before launching mondorestore during the boot phase computed by mrmini, in order to re-setup the machine as the original one.
 
 For the moment, only HP Proliant systems are supported. If you have tools to allow support for other type of machines, feel free to contribute patches to that script.
 
-If you have a Proliant system you first need to get the Smart Start Scripting Toolkit. Due to licenses issues, mindi cannot provide those tools itself. You need to get them from http://www.hp.com/servers/sstoolkit
+If you have a Proliant system you first need to get the Smart Start Scripting Toolkit. Due to licenses issues, mrmini cannot provide those tools itself. You need to get them from http://www.hp.com/servers/sstoolkit
 
-Mindi expects to find those tools under /usr/local/bin as described in the deplist.d/proliant.conf configuration file. Here are the steps to set it up correctly:
+mrmini expects to find those tools under /usr/local/bin as described in the deplist.d/proliant.conf configuration file. Here are the steps to set it up correctly:
 
 Older URL:
 wget ftp://ftp.hp.com/pub/softlib2/software1/pubsw-linux/p308169895/v40154/ss-scripting-toolkit-linux-1.70.tar.gz
@@ -29,7 +29,7 @@ echo /usr/local/lib >> /etc/ld.so.conf
 ldconfig
 
 You're now ready to check your configuration by running:
-mindi-bkphw /var/cache/mindi /etc/mindi
+mrmini-bkphw /var/cache/mrmini /etc/mrmini
 [First parameter is the directory where files will be generated,
  Second parameter is the directory of the file proliant.files is located]
 

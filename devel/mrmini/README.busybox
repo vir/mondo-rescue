@@ -1,4 +1,0 @@
-Mindi uses the busybox (http://busybox.net) project to create the boot environement used during restore.
-
-The best manner to use it is to also install our mindi-busybox package/tar file with your mindi installation.
-If you rather want to install your distribution busybox, you'll have to check it supports all the required function our is providing, that it's place under /usr/lib/mindi/rootfs/bin/busybox and that ll required links are created.

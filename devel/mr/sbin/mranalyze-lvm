@@ -24,7 +24,7 @@ use MondoRescue::LVM;
 
 =head1 NAME
 
-mranalyze-lvm - A Mindi Tool to analyze the LVM configuration and store it
+mranalyze-lvm - A MondoRescue Tool to analyze the LVM configuration and store it
 
 =head1 DESCRIPTION
 
@@ -122,11 +122,11 @@ if (defined $opts{'q'}) {
 #
 # Global variables
 #
-my $MINDI_VERSION = "PBVER-rPBREV";
-my $MINDI_PREFIX = "PBPREFIX";
-my $MINDI_CONF = "PBCONF";
-my $MINDI_LIB = "PBLIB";
-my $MINDI_SBIN = "$MINDI_PREFIX/sbin";
+my $MRMINI_VERSION = "PBVER-rPBREV";
+my $MRMINI_PREFIX = "PBPREFIX";
+my $MRMINI_CONF = "PBCONF";
+my $MRMINI_LIB = "PBLIB";
+my $MRMINI_SBIN = "$MRMINI_PREFIX/sbin";
 
 # Init
 mr_init();

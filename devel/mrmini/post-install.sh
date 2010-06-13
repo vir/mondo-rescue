@@ -28,10 +28,10 @@ fi
 sublocalshare="$local/share/PBPKG"
 sublocallib="$local/lib/PBPKG"
 
-MINDIVER=PBVER
-MINDIREV=PBREV
+MRMINIVER=PBVER
+MRMINIREV=PBREV
 ARCH=`/bin/uname -m`
-echo "PBPKG ${MINDIVER}-r${MINDIREV} will be installed under $local"
+echo "PBPKG ${MRMINIVER}-r${MRMINIREV} will be installed under $local"
 
 echo "Creating target directories ..."
 install -m 755 -d $conf $sublocallib $sublocalshare $CACHEDIR
@@ -43,11 +43,11 @@ cp -a etc/PBPKG.conf $conf
 #install -m 644 msg-txt dev.tgz $sublocallib
 #install -m 644 deplist.txt udev.files proliant.files $conf
 
-# Substitute variables for mindi
-sed -i -e "s~^MINDI_PREFIX=XXX~MINDI_PREFIX=$sublocal~" -e "s~^MINDI_CONF=YYY~MINDI_CONF=$subconf~" -e "s~^MINDI_LIB=LLL~MINDI_LIB=$sublocallib~" $local/bin/PBPKG
-#sed -i -e "s~= "YYY"~= "$subconf"~" $local/bin/mindi-bkphw
+# Substitute variables for mrmini
+sed -i -e "s~^MRMINI_PREFIX=XXX~MRMINI_PREFIX=$sublocal~" -e "s~^MRMINI_CONF=YYY~MRMINI_CONF=$subconf~" -e "s~^MRMINI_LIB=LLL~MRMINI_LIB=$sublocallib~" $local/bin/PBPKG
+#sed -i -e "s~= "YYY"~= "$subconf"~" $local/bin/mrmini-bkphw
 
-if [ "$PKGBUILDMINDI" != "true" ]; then
+if [ "$PKGBUILDMRMINI" != "true" ]; then
 	chown -R root:root $sublocallib $conf
 fi
 
