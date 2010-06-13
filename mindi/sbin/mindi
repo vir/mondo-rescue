@@ -5,7 +5,7 @@
 #
 # $Id$
 #
-# Copyright B. Cornec 2008
+# Copyright B. Cornec 2008-2010
 # Provided under the GPL v2
 
 # Syntax: see below
@@ -52,27 +52,94 @@ mindi [-v]|[-q]|[-h]|[--man]
 
 =head1 OPTIONS
 
+=cut
+
+# Handle options
+#
+GetOptions(
+
 =over 4
+
+=cut
+		"verbose|v+" => \$opts{'v'},
 
 =item B<-v|--verbose>
 
 Print a brief help message and exits.
 
+=cut
+		"quiet|q" => \$opts{'q'},
+
 =item B<-q|--quiet>
 
 Do not print any output.
+
+=cut
+		"help|?|h" => \$opts{'h'}, 
 
 =item B<-h|--help>
 
 Print a brief help message and exits.
 
+=cut
+		"man" => \$opts{'man'},
+
 =item B<--man>
 
 Prints the manual page and exits.
 
+=cut
+		"iso|i=s" => \$opts{'i'},
+
 =item B<-i|--iso iso_image>
 
 Name of the ISO image you want to created.
+
+=cut
+		"usb|u=s" => \$opts{'u'},
+
+=item B<-u|--usb usb_device>
+
+Name of the USB device on which you want to created your image.
+
+=cut
+		"tape|t=s" => \$opts{'t'},
+
+=item B<-t|--tape tape_device>
+
+Name of the Tape device on which you want to created your image.
+
+=cut
+		"obdr|o" => \$opts{'o'},
+
+=item B<-o|--obdr>
+
+Activate OBDR mode for tape (Bootable tape devices)
+
+=cut
+		"version|V" => \$opts{'V'},
+
+=item B<-V|--version>
+
+Display mindi version and exit
+
+=cut
+		"force|f" => \$opts{'f'},
+
+=item B<-f|--force>
+
+Force usage of defaults parameters or values without asking questions
+
+=cut
+		"printvar|p=s" => \$opts{'p'},
+
+=item B<-p|--printvars variable>
+
+Prints the value of the variable passed as parameter
+
+=cut
+		"log-files|l=s" => \$opts{'l'},
+) || pb_syntax(-1,0);
 
 =back 
 
@@ -93,6 +160,8 @@ Here is an example of such a configuration file:
  # mrcachedir points to the directory where the tool will store generated content
  # If not defined, mrcachedir is under /var/cache/mindi
  mrcachedir mindi = /var/cache/mindi
+
+ Also look at man mindi.conf
  
 =head1 AUTHORS
 
@@ -111,22 +180,6 @@ described in the file C<COPYING> included with the distribution.
 
 pb_syntax_init("mindi Version PBVER-rPBREV\n");
 pb_display_init("text","");
-
-# Handle options
-#
-GetOptions("help|?|h" => \$opts{'h'}, 
-		"man" => \$opts{'man'},
-		"verbose|v+" => \$opts{'v'},
-		"quiet|q" => \$opts{'q'},
-		"log-files|l=s" => \$opts{'l'},
-		"force|f" => \$opts{'f'},
-		"iso|i=s" => \$opts{'i'},
-		"usb|u=s" => \$opts{'u'},
-		"tape|t=s" => \$opts{'t'},
-		"printvar|p=s" => \$opts{'p'},
-		"obdr|o" => \$opts{'o'},
-		"version|V" => \$opts{'V'},
-) || pb_syntax(-1,0);
 
 # easy options
 if (defined $opts{'h'}) {
@@ -193,6 +246,7 @@ $md5->addfile(CONF);
 die "Invalid MD5 found sum for $MINDI_CONF/mondorescue.conf.dist: $md5->hexdigest" if ($omd5 ne $md5->hexdigest);
 close(CONF);
 
+# Adds conf files in order
 pb_conf_add("$ENV{'HOME'}/.mondorescuerc","$MINDI_CONF/mondorescue.conf","$MINDI_CONF/mondorescue.conf.dist");
 
 #
