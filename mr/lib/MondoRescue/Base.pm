@@ -59,15 +59,32 @@ if (defined $msg) {
 	pb_log($pbdebug,$msg);
 }
 
+
 # Get the various location determined at installation time
-my ($confdir,$localdir,$pbproj) = mr_dynconf_init();
+my ($etcdir,$pbproj) = mr_dynconf_init();
 
 # Temp dir
 pb_temp_init();
 
 # First use the main configuration file
 pb_conf_init($pbproj);
-pb_conf_add("$confdir/$pbproj.conf");
+#
+# Conf files Management
+# the $MRMINI_CONF/mondorescue.conf.dist is delivered as part of the project and
+# its checksum is verified as we need good default values that we can trust
+#
+open(MD5,"$etcdir/$pbproj.conf.dist.md5") || die "Unable to read mandatory $etcdir/$pbproj.conf.dist.md5: $!";
+my $omd5 = <MD5>;
+chop($omd5);
+close(MD5);
+open(CONF,"$etcdir/$pbproj.conf.dist") || die "Unable to read mandatory $etcdir/$pbproj.conf.dist: $!";
+my $md5 = Digest::MD5->new;
+binmode(CONF);
+$md5->addfile(CONF);
+die "Invalid MD5 found sum for $etcdir/$pbproj.conf.dist: $md5->hexdigest" if ($omd5 ne $md5->hexdigest);
+close(CONF);
+
+pb_conf_add("$etcdir/$pbproj.conf.dist");
 }
 
 =item B<mr_exit>

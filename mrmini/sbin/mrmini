@@ -56,91 +56,70 @@ mrmini [-v]|[-q]|[-h]|[--man]
 
 # Handle options
 #
-GetOptions(
 
+=pod
 =over 4
-
-=cut
-		"verbose|v+" => \$opts{'v'},
-
 =item B<-v|--verbose>
 
 Print a brief help message and exits.
-
-=cut
-		"quiet|q" => \$opts{'q'},
 
 =item B<-q|--quiet>
 
 Do not print any output.
 
-=cut
-		"help|?|h" => \$opts{'h'}, 
-
 =item B<-h|--help>
 
 Print a brief help message and exits.
-
-=cut
-		"man" => \$opts{'man'},
 
 =item B<--man>
 
 Prints the manual page and exits.
 
-=cut
-		"iso|i=s" => \$opts{'i'},
-
 =item B<-i|--iso iso_image>
 
 Name of the ISO image you want to created.
-
-=cut
-		"usb|u=s" => \$opts{'u'},
 
 =item B<-u|--usb usb_device>
 
 Name of the USB device on which you want to created your image.
 
-=cut
-		"tape|t=s" => \$opts{'t'},
-
 =item B<-t|--tape tape_device>
 
 Name of the Tape device on which you want to created your image.
-
-=cut
-		"obdr|o" => \$opts{'o'},
 
 =item B<-o|--obdr>
 
 Activate OBDR mode for tape (Bootable tape devices)
 
-=cut
-		"version|V" => \$opts{'V'},
-
 =item B<-V|--version>
 
 Display mrmini version and exit
 
-=cut
-		"force|f" => \$opts{'f'},
-
 =item B<-f|--force>
 
 Force usage of defaults parameters or values without asking questions
-
-=cut
-		"printvar|p=s" => \$opts{'p'},
 
 =item B<-p|--printvars variable>
 
 Prints the value of the variable passed as parameter
 
 =cut
+GetOptions(
+		"verbose|v+" => \$opts{'v'},
+		"quiet|q" => \$opts{'q'},
+		"help|?|h" => \$opts{'h'}, 
+		"man" => \$opts{'man'},
+		"iso|i=s" => \$opts{'i'},
+		"usb|u=s" => \$opts{'u'},
+		"tape|t=s" => \$opts{'t'},
+		"obdr|o" => \$opts{'o'},
+		"version|V" => \$opts{'V'},
+		"force|f" => \$opts{'f'},
+		"printvar|p=s" => \$opts{'p'},
 		"log-files|l=s" => \$opts{'l'},
 ) || pb_syntax(-1,0);
 
+=pod
 =back 
 
 =head1 WEB SITES
@@ -214,10 +193,8 @@ if (defined $opts{'i'}) {
 #
 # Global variables
 #
+my ($MRMINI_PREFIX,$MRMINI_CONF,$MRMINI_LIB) = mr_setup_var();
 my $MRMINI_VERSION = "PBVER-rPBREV";
-my $MRMINI_PREFIX = "XXX";
-my $MRMINI_CONF = "YYY";
-my $MRMINI_LIB = "LLL";
 my $MRMINI_SBIN = "$MRMINI_PREFIX/sbin";
 my $MRMINI_FDISK = "$MRMINI_SBIN/parted2fdik";
 my $MRMINI_DEPLIST = "$MRMINI_CONF/deplist.d";
@@ -230,24 +207,8 @@ chop($ARCH);
 #
 pb_temp_init();
 
-#
-# Conf files Management
-# the $MRMINI_CONF/mondorescue.conf.dist is delivered as part of the project and
-# its checksum is verified as we need good default values that we can trust
-#
-open(MD5,"$MRMINI_CONF/mondorescue.conf.dist.md5") || die "Unable to read mandatory $MRMINI_CONF/mondorescue.conf.dist.md5: $!";
-my $omd5 = <MD5>;
-chop($omd5);
-close(MD5);
-open(CONF,"$MRMINI_CONF/mondorescue.conf.dist") || die "Unable to read mandatory $MRMINI_CONF/mondorescue.conf.dist: $!";
-my $md5 = Digest::MD5->new;
-binmode(CONF);
-$md5->addfile(CONF);
-die "Invalid MD5 found sum for $MRMINI_CONF/mondorescue.conf.dist: $md5->hexdigest" if ($omd5 ne $md5->hexdigest);
-close(CONF);
-
 # Adds conf files in order
-pb_conf_add("$ENV{'HOME'}/.mondorescuerc","$MRMINI_CONF/mondorescue.conf","$MRMINI_CONF/mondorescue.conf.dist");
+pb_conf_add("$ENV{'HOME'}/.mondorescuerc","$MRMINI_CONF/mondorescue.conf");
 
 #
 # Configuration parameters
