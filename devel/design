@@ -8,6 +8,11 @@
 - Works in chroot/live CD/live system
 
 
+Name of commands:
+mrarchive: tool to create MondoRescue archives
+mrrestore: tool to create MondoRescue restore
+mrmini: tool to create MondoRescue mini distribution
+
 Mindi design:
 
 Goal is to create a bootable env contaning everything suited for DR/Cloning from the running system
