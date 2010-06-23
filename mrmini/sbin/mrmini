@@ -26,11 +26,8 @@ use ProjectBuilder::Distribution;
 use ProjectBuilder::Display;
 use MondoRescue::LVM;
 use MondoRescue::Base;
-
-# Global variables
-my %opts;					# CLI Options
-my @date = pb_get_date();
-my $mr_date = strftime("%Y-%m-%d %H:%M:%S", @date);
+use MondoRescue::DynConf;
+use MondoRescue::Mini::Base;
 
 =pod
 
@@ -104,6 +101,10 @@ Force usage of defaults parameters or values without asking questions
 Prints the value of the variable passed as parameter
 
 =cut
+
+# Global variables
+my %opts;					# CLI Options
+
 GetOptions(
 		"verbose|v+" => \$opts{'v'},
 		"quiet|q" => \$opts{'q'},
@@ -153,11 +154,28 @@ described in the file C<COPYING> included with the distribution.
 
 =cut
 
+
+
 # ---------------------------------------------------------------------------
 
 # Initialize the syntax string
 
-pb_syntax_init("mrmini Version PBVER-rPBREV\n");
+#
+# Global variables
+#
+my $proj;
+($mr->{'confdir'},$proj) = mr_dynconf_init();
+my @date = pb_get_date();
+$mr->{'start_date'} = strftime("%Y-%m-%d %H:%M:%S", @date);
+
+$ENV{'PBPROJ'} = $proj;
+$ENV{'PBPKG'} = "mrmini";
+
+# Adds conf files in order
+pb_conf_add("$mr->{'confdir'}/mondorescue.conf.dist","$mr->{'confdir'}/mondorescue.conf");
+($mr->{'install_dir'},$mr->{'version'}) =  mr_conf_get("mr_install_dir","mr_version");
+
+pb_syntax_init("$ENV{'PBPKG'} Version $mr->{'version'}\n");
 pb_display_init("text","");
 
 # easy options
@@ -189,81 +207,14 @@ my $iso;
 if (defined $opts{'i'}) {
 	$iso = $opts{'i'};
 }
-
-#
-# Global variables
-#
-my ($MRMINI_PREFIX,$MRMINI_CONF,$MRMINI_LIB) = mr_setup_var();
-my $MRMINI_VERSION = "PBVER-rPBREV";
-my $MRMINI_SBIN = "$MRMINI_PREFIX/sbin";
-my $MRMINI_FDISK = "$MRMINI_SBIN/parted2fdik";
-my $MRMINI_DEPLIST = "$MRMINI_CONF/deplist.d";
-# Better ?
-my $ARCH = `uname -m`;
-chop($ARCH);
+my $logfile = undef;
+if (defined $opts{'l'}) {
+	$logfile = $opts{'l'};
+}
 
 # 
 # Temp dir
 #
 pb_temp_init();
-
-# Adds conf files in order
-pb_conf_add("$ENV{'HOME'}/.mondorescuerc","$MRMINI_CONF/mondorescue.conf");
-
-#
-# Configuration parameters
-#
-$ENV{'PBPROJ'} = "mrmini";
-my ($mr_boot_size,$mr_boot_cd,$mr_boot_usb,$mr_boot_tape,$mr_kernel,$mr_fstab) =  pb_conf_get("mr_boot_size","mr_boot_cd","mr_boot_usb","mr_boot_tape","mr_kernel","mr_fstab");
-my ($mr_tape_mods,$mr_scsi_mods,$mr_ide_mods,$mr_pcmcia_mods,$mr_usb_mods,$mr_net_mods,$mr_cdrom_mods,$mr_deny_mods,$mr_force_mods) =  pb_conf_get("mr_tape_mods","mr_scsi_mods","mr_ide_mods","mr_pcmcia_mods","mr_usb_mods","mr_net_mods","mr_cdrom_mods","mr_extra_mods","mr_deny_mods","mr_force_mods");
-my ($mr_logfile,$mr_cache_dir,$mr_boot_msg,$mr_burn_cmd,$mr_burn_opt) = pb_conf_get("mr_logfile","mr_cache_dir","mr_boot_msg","mr_burn_cmd","mr_burn_opt");
-
-#
-# Manage log file
-#
-my $logfile = $mr_logfile->{$ENV{'PBPROJ'}};
-
-if (defined $opts{'l'}) {
-	$logfile = $opts{'l'};
-}
-open(pbLOG,"> $logfile") || die "Unable to log to $logfile: $!";
-$pbLOG = \*pbLOG;
-$pbdebug = 0  if ($pbdebug == -1);
-pb_log_init($pbdebug, $pbLOG);
-
-pb_log(0,"mrmini start date: $mr_date");
-pb_log(0,"-------------------------------------");
-pb_log(0,"mrmini v$MRMINI_VERSION");
-pb_log(0,"$ARCH architecture detected");
-pb_log(0,"mrmini called with the following arguments: ".join(" ",@ARGV));
-pb_log(0,"-------------------------------------");
-pb_log(0,"MONDO_CACHE: $ENV{'MONDO_CACHE'}") if (defined $ENV{'MONDO_CACHE'});
-pb_log(0,"MRMINI_LIB: $MRMINI_LIB");
-pb_log(0,"MRMINI_CONF: $MRMINI_CONF");
-pb_log(0,"MRMINI_SBIN: $MRMINI_SBIN");
-if (-r "$ENV{'HOME'}/.mondorescuerc") {
-	pb_log(0,"-------------------------------------");
-	pb_log(0,"Conf file $ENV{'HOME'}/.mondorescuerc");
-	pb_display_file("$ENV{'HOME'}/.mondorescuerc");
-}
-if (-r "$MRMINI_CONF/mondorescue.conf") {
-	pb_log(0,"-------------------------------------");
-	pb_log(0,"Conf file $MRMINI_CONF/mondorescue.conf");
-	pb_display_file("$MRMINI_CONF/mondorescue.conf");
-}
-pb_log(0,"-------------------------------------");
-
-#
-# Prepare cache dir
-#
-pb_rm_rf("$mr_cache_dir/*");
-pb_mkdir_p($mr_cache_dir);
-
-# 
-# LVM setup
-#
-my ($lvmver,$lvmcmd) = mr_lvm_check();
-
-pb_log(0,"LVM $lvmver command set to $lvmcmd");
-pb_log(0,"-------------------------------------");
+mr_mini_main($logfile);
 mr_exit(0);

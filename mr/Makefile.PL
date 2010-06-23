@@ -8,7 +8,7 @@ WriteMakefile(
 	DISTNAME	 => 'PBPKG',
 	VERSION	  => 'PBVER',
 	INST_SCRIPT  => 'blib/bin',
-	INSTALLDIRS  => 'perl',
+	INSTALLDIRS  => 'vendor',
 	PREREQ_PM	=> {
 			#HTTP::Headers					=> 1.59,
 			#Template						 => 0,
@@ -60,16 +60,22 @@ sub postamble {
 		if (not defined $target) {
 			$target = "/usr/local";
 			if (not defined $confdir) {
-				$confdir = "/usr/local/etc";
+				$confdir = "$target/etc";
+			}
+			if (not defined $cachedir) {
+				$cachedir = "$target/var/cache";
 			}
 		} else {
-			$sharedir = $sharedir || "$target/share";
-			$mandir = $mandir || "$sharedir/man";
 			$cachedir = $cachedir || "$target/var/cache";
 			if (not defined $confdir) {
 				die "CONFDIR should be defined if PREFIX is defined";
 			}
+			if (not defined $cachedir) {
+				die "CACHEDIR should be defined if PREFIX is defined";
+			}
 		}
+		$sharedir = $sharedir || "$target/share";
+		$mandir = $mandir || "$sharedir/man";
 
 		my $conff = "etc/PBPROJ.conf";
 		open(CONF, ">> $conff") || die "Unable to append to $conff";
@@ -82,7 +88,6 @@ sub postamble {
 #
 mr_install_dir default = $target
 #
-#
 # conf dir
 #
 mr_conf_dir default = $confdir/PBPROJ
@@ -94,6 +99,10 @@ mr_cache_dir default = $cachedir/PBPROJ
 # share directory
 #
 mr_share_dir default = $sharedir/PBPROJ
+#
+# version
+#
+mr_version default = PBVER-rPBREV
 EOF
 		close(CONF);
 		# Create the dynamic content for MondoRescue
@@ -101,14 +110,11 @@ EOF
 		open(DYN, "> $dynf") || die "Unable to create $dynf";
 
 		$text .= "install ::\n";
-		$text .= "\t".'@echo PBPKG PBVER-PBREV will be installed under $(DESTDIR)'."\n";
+		$text .= "\t".'@echo PBPKG PBVER-rPBREV will be installed under $(DESTDIR)'."\n";
 		$text .= "\t".'install -m 755 -d $(DESTDIR)'."$confdir/PBPROJ".' $(DESTDIR)'."$cachedir/PBPROJ".' $(DESTDIR)'."$sharedir/PBPROJ\n";
 		$text .= "\t".'cp etc/PBPROJ.conf $(DESTDIR)'."$confdir/PBPROJ/PBPROJ.conf.dist ; install -m 755 -d ".' $(DESTDIR)'."$mandir/man5 ; pod2man etc/PBPROJ.conf > ".'$(DESTDIR)'."$mandir/man5/PBPROJ.conf.5\n";
 		$text .= "\t".'md5sum $(DESTDIR)'."$confdir/PBPROJ/PBPROJ.conf.dist > ".'$(DESTDIR)'."$confdir/PBPROJ/PBPROJ.conf.dist.md5\n";
-		$text .= "\t".'cp lib/MondoRescue/DynConf.pm $(DESTDIR)/$(INST_LIBDIR)/'."\n";
-		$text .= "\t".'md5sum $(DESTDIR)'."$confdir/PBPROJ/PBPROJ.conf.dist > ".'$(DESTDIR)'."$confdir/PBPROJ/PBPROJ.conf.dist.md5\n";
-		#$text .= "\t".'if [ -f etc/PBKG.conf ]; then cp etc/PBPKG.conf $(DESTDIR)'."$confdir/PBPROJ/PBKG.conf.dist ; install -m 755 -d ".' $(DESTDIR)'."$mandir/man5 ; pod2man etc/PBPKG.conf > ".'$(DESTDIR)'."$mandir/man5/PBPKG.conf.5 ; fi\n";
-		#$text .= "\t".'md5sum $(DESTDIR)'."$confdir/PBPROJ/PBPKG.conf.dist > ".'$(DESTDIR)'."$confdir/PBPROJ/PBPKG.conf.dist.md5\n";
+		$text .= "\t".'cp lib/MondoRescue/DynConf.pm $(DESTDIR)/$(VENDORLIBEXP)/MondoRescue/'."\n";
 
 		# Now generate a perl module used by every other one in the project
 		print DYN << "EOF";
@@ -151,14 +157,14 @@ This modules provides environment variables setup for the Mondorescue project
 =item B<mr_dynconf_init>
 
 This function returns all the installation PATH info needed by the project
-It takes no parameter and returns 3 values
+It takes no parameter and returns 2 values
 First value is the conf dir
 Second value is the project name
 
 =cut
 
 sub mr_dynconf_init {
-	return($confdir,PBPROJ);
+	return("$confdir/PBPROJ","PBPROJ");
 }
 1;
 =pod
