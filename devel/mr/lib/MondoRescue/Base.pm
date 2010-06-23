@@ -24,11 +24,15 @@ use MondoRescue::DynConf;
 
 use Exporter;
 
+# Global hash for configuration params of mr
+my %mr;
+our $mr = \%mr;
+
 # Export, by default, all the functions into the namespace of
 # any code which uses this module.
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw(mr_init mr_exit);
+our @EXPORT = qw(mr_init mr_exit mr_conf_get $mr);
 
 =pod
 
@@ -70,7 +74,7 @@ pb_temp_init();
 pb_conf_init($pbproj);
 #
 # Conf files Management
-# the $MRMINI_CONF/mondorescue.conf.dist is delivered as part of the project and
+# the $etcdir/mondorescue.conf.dist is delivered as part of the project and
 # its checksum is verified as we need good default values that we can trust
 #
 open(MD5,"$etcdir/$pbproj.conf.dist.md5") || die "Unable to read mandatory $etcdir/$pbproj.conf.dist.md5: $!";
@@ -104,4 +108,38 @@ if (defined $msg) {
 }
 die "ERROR returned\n" if ($code < 0);
 exit($code);
+}
+
+=item B<mr_conf_get>
+
+This function get parameters in configuration files and returns from the least significant level (default) to the emost significant level (application name), passing by the project name.
+It takes a list of parameters to find and returns the values corresponding
+
+=cut
+
+
+sub mr_conf_get {
+	my @params = @_;
+	my @ptr = ();
+	my $ptr;
+	
+	pb_log(2,"Entering mr_conf_get\n");
+	my @args1 = pb_conf_get_if(@params);
+	my $proj = $ENV{'PBPROJ'};
+	$ENV{'PBPROJ'} = $ENV{'PBPKG'};
+	my @args2 = pb_conf_get_if(@params);
+	foreach my $i (0..$#args1) {
+		$ptr = undef;
+		# Process from least important to more important
+		$ptr = $args1[$i]->{'default'};
+		$ptr[$i] = $ptr if (defined $ptr);
+		$ptr = $args1[$i]->{$ENV{'PBPROJ'}};
+		$ptr[$i] = $ptr if (defined $ptr);
+		$ptr = $args2[$i]->{$ENV{'PBPKG'}};
+		$ptr[$i] = $ptr if (defined $ptr);
+		$ptr[$i] = "Undefined" if (not defined $ptr[$i]);
+		pb_log(2,"Found parameter $params[$i] with value $ptr[$i]\n");
+	}
+	$ENV{'PBPROJ'} = $proj;
+	return(@ptr);
 }
