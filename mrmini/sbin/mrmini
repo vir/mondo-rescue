@@ -209,12 +209,23 @@ if (defined $opts{'i'}) {
 }
 my $logfile = undef;
 if (defined $opts{'l'}) {
+	# Log file forced externally
 	$logfile = $opts{'l'};
+} elsif ($pbdebug ge 1) {
+	# Log file forced internally to default value as we are in debug mode
+	($logfile) =  mr_conf_get("mr_logfile");
+}
+
+if (defined $logfile) {
+	open(pbLOG,"> $logfile") || die "Unable to log to $logfile: $!";
+	$mr->{'logdesc'} = \*pbLOG;
+} else {
+	$mr->{'logdesc'} = undef;
 }
 
 # 
 # Temp dir
 #
 pb_temp_init();
-mr_mini_main($logfile);
+mr_mini_main();
 mr_exit(0);

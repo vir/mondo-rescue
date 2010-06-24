@@ -101,10 +101,14 @@ It takes 2 parameters, the exit code, and the message to print if needed
 sub mr_exit {
 
 my $code = shift;
-my $msg = shift || "";
+my $msg = shift;
 
 if (defined $msg) {
 	pb_log($pbdebug,$msg);
+}
+# CLoses log
+if (defined $mr->{'logdesc'}) {
+	close($mr->{'logdesc'});
 }
 die "ERROR returned\n" if ($code < 0);
 exit($code);
