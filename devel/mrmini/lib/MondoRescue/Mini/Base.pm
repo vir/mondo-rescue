@@ -19,6 +19,7 @@ use ProjectBuilder::Conf;
 use MondoRescue::DynConf;
 use MondoRescue::Base;
 use MondoRescue::LVM;
+use MondoRescue::Inventory;
 
 # Inherit from the "Exporter" module which handles exporting functions.
 
@@ -78,7 +79,7 @@ pb_log(0,"$ENV{'PBPKG'} v$mr->{'version'} start date: $mr->{'start_date'}\n");
 pb_log(0,$sep);
 pb_log(0,"$ARCH architecture detected\n");
 pb_log(0,"$ENV{'PBPKG'} called with the following arguments: ".join(" ",@ARGV)."\n");
-pb_log(0,$sep);
+pb_log(1,$sep);
 pb_log(1,"CONFDIR: $mr->{'confdir'}\n");
 pb_log(1,"SBIN: $mr->{'install_dir'}/sbin\n");
 if (-r "$ENV{'HOME'}/.mondorescuerc") {
@@ -91,22 +92,17 @@ if (-r "$mr->{'confdir'}/mondorescue.conf") {
 	pb_log(0,"Conf file $mr->{'confdir'}/mondorescue.conf\n");
 	pb_display_file("$mr->{'confdir'}/mondorescue.conf",$pbLOG);
 }
-pb_log(0,$sep);
 
 #
 # Prepare cache dir
 #
+# To be checked more
 pb_rm_rf("$mr->{'cache_dir'}/*");
 pb_mkdir_p($mr->{'cache_dir'});
 
 my $mrmini_fdisk = "$mr->{'install_dir'}/parted2fdik";
 my $mrmini_deplist = "$mr->{'confdir'}/deplist.d";
 
-# 
-# LVM setup
-#
-my ($lvmver,$lvmcmd) = mr_lvm_check();
-
-pb_log(0,"LVM $lvmver command set to $lvmcmd\n");
-pb_log(0,$sep);
+# Full OS inventory
+mr_inv_os();
 }

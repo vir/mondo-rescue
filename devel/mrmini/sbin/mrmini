@@ -158,7 +158,12 @@ described in the file C<COPYING> included with the distribution.
 
 # ---------------------------------------------------------------------------
 
-# Initialize the syntax string
+# Catch signals
+$SIG{INT} = \&mr_exit;
+$SIG{QUIT} = \&mr_exit;
+$SIG{ABRT} = \&mr_exit;
+$SIG{KILL} = \&mr_exit;
+$SIG{TERM} = \&mr_exit;
 
 #
 # Global variables
@@ -175,6 +180,7 @@ $ENV{'PBPKG'} = "mrmini";
 pb_conf_add("$mr->{'confdir'}/mondorescue.conf.dist","$mr->{'confdir'}/mondorescue.conf");
 ($mr->{'install_dir'},$mr->{'version'}) =  mr_conf_get("mr_install_dir","mr_version");
 
+# Initialize the syntax string
 pb_syntax_init("$ENV{'PBPKG'} Version $mr->{'version'}\n");
 pb_display_init("text","");
 

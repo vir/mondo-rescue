@@ -116,7 +116,7 @@ exit($code);
 
 =item B<mr_conf_get>
 
-This function get parameters in configuration files and returns from the least significant level (default) to the emost significant level (application name), passing by the project name.
+This function get parameters in configuration files and returns from the least significant level (default) to the most significant level (application name), passing by the project name.
 It takes a list of parameters to find and returns the values corresponding
 
 =cut
