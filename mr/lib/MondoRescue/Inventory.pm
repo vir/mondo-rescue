@@ -18,6 +18,9 @@ use POSIX qw(strftime);
 use lib qw (lib);
 use ProjectBuilder::Base;
 use ProjectBuilder::Conf;
+use ProjectBuilder::Distribution;
+use MondoRescue::LVM;
+use MondoRescue::Kernel;
 
 # Inherit from the "Exporter" module which handles exporting functions.
 
@@ -27,7 +30,13 @@ use Exporter;
 # any code which uses this module.
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw(mr_exit);
+our @EXPORT = qw(mr_inv_os $mr_os);
+
+# Globals
+our %mr_hw;
+our $mr_hw = \%mr_hw;
+our %mr_os;
+our $mr_os = \%mr_hw;
 
 =pod
 
@@ -65,20 +74,44 @@ sub mr_inv_hw {
 	# cmdline
 }
 
-sub mr_inv_hw_context {
+sub mr_inv_os {
 
-my %pb;
-my ($ddir, $dver, $dfam);
-my $cmdline = "/dev/null";
-($ddir, $dver, $dfam, $pb{'dtype'}, $pb{'suf'}, $pb{'upd'}, $pb{'arch'}) = pb_distro_init();
-pb_log(2,"DEBUG: distro tuple: ".Dumper($ddir, $dver, $dfam, $pb{'dtype'}, $pb{'suf'})."\n");
+($mr_os->{'name'}, $mr_os->{'version'}, $mr_os->{'family'}, $mr_os->{'type'}, $mr_os->{'os'}, $mr_os->{'suffix'}, $mr_os->{'update'}, $mr_os->{'arch'}) = pb_distro_init();
 
-if (($pb{{'dtype'} eq "rpm") || ($pb{{'dtype'} eq "deb") || ($pb{{'dtype'} eq "ebuild") || ($pb{{'dtype'} eq "tgz")) {
-	cmdline = "/proc/cmdline";
-} elsif ($pb{{'dtype'} eq "pkg") {
-	cmdline = "/proc/cmdline";
+# Get some conf file content when they exist; Depends on genre or more precise tuple
+for my $p ("mr_cmdline","mr_fstab","mr_raidtab","mr_swap","mr_partitions","mr_filesystems","mr_modules","mr_xen") {
+	my $key = $p;
+	$key =~ s/mr_//;
+	my ($pp) = pb_conf_get_if($p);
+	if (defined $pp) {
+		my $file = pb_distro_get_param($mr_os->{'name'},$mr_os->{'version'},$mr_os->{'arch'},$pp,$mr_os->{'family'},$mr_os->{'type'},$mr_os->{'os'});
+		if (-r $file) {
+			pb_log(2,"DEBUG: File found: $file\n");
+			$mr_os->{'files'}->{$key} = pb_get_content($file);
+		} else {
+			pb_log(2,"WARNING: $file not found\n");
+		}
+	}
 }
-return(pb_get_content($cmdline));
+
+# Get some commands result content when they exist; Depends on genre or more precise tuple
+for my $p ("mr_mount","mr_lsmod","mr_df") {
+	my $key = $p;
+	$key =~ s/mr_//;
+	my ($pp) = pb_conf_get_if($p);
+	if (defined $pp) {
+		my $cmd = pb_distro_get_param($mr_os->{'name'},$mr_os->{'version'},$mr_os->{'arch'},$pp,$mr_os->{'family'},$mr_os->{'type'},$mr_os->{'os'});
+		pb_log(2,"DEBUG: Cmd found: $cmd\n");
+		$mr_os->{'cmd'}->{$key} = `$cmd`;
+	}
+}
+# 
+# LVM setup
+#
+($mr_os->{'lvmver'},$mr_os->{'$lvmcmd'}) = mr_lvm_check();
+
+# Summary of conf printed.
+pb_log(1,"OS Inventory: ".Dumper($mr_os)."\n");
 }
 
 =item B<mr_inv_fw>
