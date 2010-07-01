@@ -20,7 +20,6 @@ use ProjectBuilder::Base;
 use ProjectBuilder::Conf;
 use ProjectBuilder::Distribution;
 use MondoRescue::LVM;
-use MondoRescue::Kernel;
 
 # Inherit from the "Exporter" module which handles exporting functions.
 
@@ -79,7 +78,7 @@ sub mr_inv_os {
 ($mr_os->{'name'}, $mr_os->{'version'}, $mr_os->{'family'}, $mr_os->{'type'}, $mr_os->{'os'}, $mr_os->{'suffix'}, $mr_os->{'update'}, $mr_os->{'arch'}) = pb_distro_init();
 
 # Get some conf file content when they exist; Depends on genre or more precise tuple
-for my $p ("mr_cmdline","mr_fstab","mr_raidtab","mr_swap","mr_partitions","mr_filesystems","mr_modules","mr_xen") {
+for my $p ("mr_proc_cmdline","mr_etc_fstab","mr_etc_raidtab","mr_proc_swaps","mr_proc_partitions","mr_proc_filesystems","mr_proc_modules","mr_proc_xen","mr_proc_cpuinfo","mr_proc_devices","mr_proc_meminfo","mr_proc_misc","mr_proc_mounts","mr_proc_version") {
 	my $key = $p;
 	$key =~ s/mr_//;
 	my ($pp) = pb_conf_get_if($p);
@@ -89,26 +88,33 @@ for my $p ("mr_cmdline","mr_fstab","mr_raidtab","mr_swap","mr_partitions","mr_fi
 			pb_log(2,"DEBUG: File found: $file\n");
 			$mr_os->{'files'}->{$key} = pb_get_content($file);
 		} else {
-			pb_log(2,"WARNING: $file not found\n");
+			pb_log(1,"WARNING: $file not found\n");
 		}
 	}
 }
 
 # Get some commands result content when they exist; Depends on genre or more precise tuple
-for my $p ("mr_mount","mr_lsmod","mr_df") {
+for my $p ("mr_cmd_mount","mr_cmd_df","mr_cmd_dmidecode","mr_cmd_lshw") {
 	my $key = $p;
-	$key =~ s/mr_//;
+	$key =~ s/mr_cmd_//;
 	my ($pp) = pb_conf_get_if($p);
+	my ($po) = pb_conf_get_if("mr_opt_".$key);
 	if (defined $pp) {
 		my $cmd = pb_distro_get_param($mr_os->{'name'},$mr_os->{'version'},$mr_os->{'arch'},$pp,$mr_os->{'family'},$mr_os->{'type'},$mr_os->{'os'});
-		pb_log(2,"DEBUG: Cmd found: $cmd\n");
-		$mr_os->{'cmd'}->{$key} = `$cmd`;
+		my $opt = "";
+		$opt = pb_distro_get_param($mr_os->{'name'},$mr_os->{'version'},$mr_os->{'arch'},$po,$mr_os->{'family'},$mr_os->{'type'},$mr_os->{'os'}) if (defined ($po));
+		if (-x $cmd) {
+			pb_log(2,"DEBUG: Cmd found: $cmd $opt\n");
+			$mr_os->{'cmd'}->{$key} = `$cmd $opt`;
+		} else {
+			pb_log(1,"WARNING: $cmd not found\n");
+		}
 	}
 }
 # 
 # LVM setup
 #
-($mr_os->{'lvmver'},$mr_os->{'$lvmcmd'}) = mr_lvm_check();
+($mr_os->{'lvmver'},$mr_os->{'lvmcmd'}) = mr_lvm_check();
 
 # Summary of conf printed.
 pb_log(1,"OS Inventory: ".Dumper($mr_os)."\n");

@@ -11,11 +11,11 @@ package MondoRescue::Kernel;
 
 use strict 'vars';
 use Data::Dumper;
-use English;
 use lib qw (lib);
 use ProjectBuilder::Base;
 use ProjectBuilder::Conf;
 use MondoRescue::Base;
+use MondoRescue::Inventory;
 
 # Inherit from the "Exporter" module which handles exporting functions.
 
@@ -25,7 +25,7 @@ use Exporter;
 # any code which uses this module.
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw(mr_kernel_check);
+our @EXPORT = qw(mr_kernel_get_version);
 
 =pod
 
@@ -41,7 +41,7 @@ This modules provides low level functions for Kernel support in the Mondorescue 
 
 =over 4
 
-=item B<mr_kernel_check>
+=item B<mr_kernel_get_version>
 
 This function checks the kernel and returns back its version
 
@@ -49,6 +49,14 @@ This function checks the kernel and returns back its version
 
 sub mr_kernel_get_version {
 
+my ($os,$ver,$kernelver,$rest);
+
+# By default we don't know how it works for other OSes
+$kernelver = "unknown";
+
+($os,$ver,$kernelver,$rest) = split(/ /,$mr_os->{'files'}->{'proc_version'}) if ($mr_os->{'os'} eq "linux");
+
+return($kernelver);
 }
 
 =back
