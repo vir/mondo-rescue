@@ -55,7 +55,7 @@ sub mr_mini_main {
 # Configuration parameters
 #
 # Checks
-die "mr->mini_conf not declared in environment" if (not defined $mr->{'confdir'});
+die "mr->confdir not declared in environment" if (not defined $mr->{'confdir'});
 
 # Better ?
 my $ARCH = `uname -m`;
