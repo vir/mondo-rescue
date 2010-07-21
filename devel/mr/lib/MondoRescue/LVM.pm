@@ -57,7 +57,7 @@ sub mr_lvm_check {
 my $lvmver = shift;
 
 # Get params from the conf file
-my ($lvmds_t,$lvmproc_t,$lvmcmd_t,$lvmpath_t) = pb_conf_get("mr_lvmdiskscan","mr_lvmprocfile","mr_lvmcmd","mr_lvmpath");
+my ($lvmds_t,$lvmproc_t,$lvmcmd_t,$lvmpath_t) = pb_conf_get("mr_cmd_lvmdiskscan","mr_proc_lvm","mr_cmd_lvm","mr_path_lvm");
 my $lvmds = $lvmds_t->{$ENV{PBPROJ}};
 my $lvmproc = $lvmproc_t->{$ENV{PBPROJ}};
 my $lvmcmd = $lvmcmd_t->{$ENV{PBPROJ}};
