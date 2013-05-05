@@ -168,16 +168,10 @@ $SIG{TERM} = \&mr_exit;
 #
 # Global variables
 #
-my $proj;
-($mr->{'confdir'},$proj) = mr_dynconf_init();
-my @date = pb_get_date();
-$mr->{'start_date'} = strftime("%Y-%m-%d %H:%M:%S", @date);
-
-$ENV{'PBPROJ'} = $proj;
+mr_init();
 $ENV{'PBPKG'} = "mrmini";
 
 # Adds conf files in order
-pb_conf_add("$mr->{'confdir'}/mondorescue.conf.dist","$mr->{'confdir'}/mondorescue.conf");
 ($mr->{'install_dir'},$mr->{'version'}) =  mr_conf_get("mr_install_dir","mr_version");
 
 # Initialize the syntax string
@@ -192,7 +186,7 @@ if (defined $opts{'man'}) {
 	pb_syntax(0,2);
 }
 if (defined $opts{'p'}) {
-	pb_display("$ENV{$opts{'p'}}\n");
+	print("$ENV{$opts{'p'}}\n");
 	exit(0);
 }
 
@@ -229,9 +223,6 @@ if (defined $logfile) {
 	$mr->{'logdesc'} = undef;
 }
 
-# 
-# Temp dir
-#
-pb_temp_init();
+pb_log_init($pbdebug,$mr->{'logdesc'});
 mr_mini_main();
 mr_exit(0);
