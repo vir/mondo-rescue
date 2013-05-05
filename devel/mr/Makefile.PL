@@ -114,7 +114,6 @@ EOF
 		$text .= "\t".'install -m 755 -d $(DESTDIR)'."$confdir/PBPROJ".' $(DESTDIR)'."$cachedir/PBPROJ".' $(DESTDIR)'."$sharedir/PBPROJ\n";
 		$text .= "\t".'cp etc/PBPROJ.conf $(DESTDIR)'."$confdir/PBPROJ/PBPROJ.conf.dist ; install -m 755 -d ".' $(DESTDIR)'."$mandir/man5 ; pod2man etc/PBPROJ.conf > ".'$(DESTDIR)'."$mandir/man5/PBPROJ.conf.5\n";
 		$text .= "\t".'md5sum $(DESTDIR)'."$confdir/PBPROJ/PBPROJ.conf.dist > ".'$(DESTDIR)'."$confdir/PBPROJ/PBPROJ.conf.dist.md5\n";
-		$text .= "\t".'if [ ! -f "'.'$(DESTDIR)'."$confdir/PBPROJ/PBPROJ.conf".'" ]; then echo "# Local configuration file for Mondorescue" > $(DESTDIR)'."$confdir/PBPROJ/PBPROJ.conf".'; echo "# Adapt content taken from the distribution conf file PBPROJ.conf.dist which should remain untouched" >> $(DESTDIR)'."$confdir/PBPROJ/PBPROJ.conf ; fi\n";
 		$text .= "\t".'cp lib/MondoRescue/DynConf.pm $(DESTDIR)/$(VENDORLIBEXP)/MondoRescue/'."\n";
 
 		# Now generate a perl module used by every other one in the project
