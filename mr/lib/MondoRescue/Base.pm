@@ -16,6 +16,7 @@ use File::Basename;
 use File::Copy;
 use POSIX qw(strftime);
 use lib qw (lib);
+use Digest::MD5;
 use ProjectBuilder::Base;
 use ProjectBuilder::Conf;
 use MondoRescue::DynConf;
@@ -79,13 +80,14 @@ pb_conf_init($pbproj);
 #
 open(MD5,"$etcdir/$pbproj.conf.dist.md5") || die "Unable to read mandatory $etcdir/$pbproj.conf.dist.md5: $!";
 my $omd5 = <MD5>;
-chop($omd5);
+chomp($omd5);
 close(MD5);
 open(CONF,"$etcdir/$pbproj.conf.dist") || die "Unable to read mandatory $etcdir/$pbproj.conf.dist: $!";
 my $md5 = Digest::MD5->new;
 binmode(CONF);
 $md5->addfile(CONF);
-die "Invalid MD5 found sum for $etcdir/$pbproj.conf.dist: $md5->hexdigest" if ($omd5 ne $md5->hexdigest);
+my $digest = $md5->hexdigest;
+die "Invalid MD5 sum found for $etcdir/$pbproj.conf.dist: $digest" if ($omd5 ne $digest);
 close(CONF);
 
 pb_conf_add("$etcdir/$pbproj.conf.dist");
