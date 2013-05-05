@@ -60,37 +60,46 @@ sub mr_init {
 
 my $msg = shift || "";
 
+pb_log_init($pbdebug);
+
 if (defined $msg) {
 	pb_log($pbdebug,$msg);
 }
 
 
+my $pbproj;
 # Get the various location determined at installation time
-my ($etcdir,$pbproj) = mr_dynconf_init();
+($mr->{'confdir'},$pbproj) = mr_dynconf_init();
 
 # Temp dir
 pb_temp_init();
 
 # First use the main configuration file
 pb_conf_init($pbproj);
+$ENV{'PBPROJ'} = $pbproj;
 #
 # Conf files Management
-# the $etcdir/mondorescue.conf.dist is delivered as part of the project and
+# the $mr->{'confdir'}/mondorescue.conf.dist is delivered as part of the project and
 # its checksum is verified as we need good default values that we can trust
 #
-open(MD5,"$etcdir/$pbproj.conf.dist.md5") || die "Unable to read mandatory $etcdir/$pbproj.conf.dist.md5: $!";
+open(MD5,"$mr->{'confdir'}/$pbproj.conf.dist.md5") || die "Unable to read mandatory $mr->{'confdir'}/$pbproj.conf.dist.md5: $!";
 my $omd5 = <MD5>;
-chomp($omd5);
 close(MD5);
-open(CONF,"$etcdir/$pbproj.conf.dist") || die "Unable to read mandatory $etcdir/$pbproj.conf.dist: $!";
-my $md5 = Digest::MD5->new;
+chomp($omd5);
+# remove file name
+$omd5 =~ s/ .*//;
+open(CONF,"$mr->{'confdir'}/$pbproj.conf.dist") || die "Unable to read mandatory $mr->{'confdir'}/$pbproj.conf.dist: $!";
 binmode(CONF);
-$md5->addfile(CONF);
-my $digest = $md5->hexdigest;
-die "Invalid MD5 sum found for $etcdir/$pbproj.conf.dist: $digest" if ($omd5 ne $digest);
+my $md5 = Digest::MD5->new->addfile(*CONF)->hexdigest;
+chomp($md5);
+die "Invalid MD5 found sum for $mr->{'confdir'}/$pbproj.conf.dist: *$md5* instead of *$omd5*" if ($omd5 ne $md5);
 close(CONF);
 
-pb_conf_add("$etcdir/$pbproj.conf.dist");
+pb_conf_add("$mr->{'confdir'}/$pbproj.conf.dist");
+pb_conf_add("$mr->{'confdir'}/$pbproj.conf") if (-f "$mr->{'confdir'}/$pbproj.conf");
+
+my @date = pb_get_date();
+$mr->{'start_date'} = strftime("%Y-%m-%d %H:%M:%S", @date);
 }
 
 =item B<mr_exit>
@@ -112,7 +121,7 @@ if (defined $msg) {
 if (defined $mr->{'logdesc'}) {
 	close($mr->{'logdesc'});
 }
-die "ERROR returned\n" if ($code < 0);
+die "ERROR returned\n" if ($code lt 0);
 exit($code);
 }
 
