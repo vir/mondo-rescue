@@ -14,7 +14,7 @@ use Data::Dumper;
 use English;
 use File::Basename;
 use File::Copy;
-use POSIX qw(strftime);
+use POSIX qw(strftime uname);
 use lib qw (lib);
 use ProjectBuilder::Base;
 use ProjectBuilder::Conf;
@@ -75,15 +75,22 @@ sub mr_inv_hw {
 
 sub mr_inv_os {
 
-($mr_os->{'name'}, $mr_os->{'version'}, $mr_os->{'family'}, $mr_os->{'type'}, $mr_os->{'os'}, $mr_os->{'suffix'}, $mr_os->{'update'}, $mr_os->{'arch'}) = pb_distro_init();
+$mr_os->{'pbos'} = pb_distro_init();
+
+pb_log(2,"OS Inventory: pbos ".Dumper($mr_os)."\n");
+
+# Get some running kernel info
+($mr_os->{'uname'}->{'sysname'}, $mr_os->{'uname'}->{'nodename'}, $mr_os->{'uname'}->{'release'}, $mr_os->{'uname'}->{'version'}, $mr_os->{'uname'}->{'machine'}) = uname();
+
+pb_log(2,"OS Inventory: uname ".Dumper($mr_os)."\n");
 
 # Get some conf file content when they exist; Depends on genre or more precise tuple
-for my $p ("mr_proc_cmdline","mr_etc_fstab","mr_etc_raidtab","mr_proc_swaps","mr_proc_partitions","mr_proc_filesystems","mr_proc_modules","mr_proc_xen","mr_proc_cpuinfo","mr_proc_devices","mr_proc_meminfo","mr_proc_misc","mr_proc_mounts","mr_proc_version") {
+for my $p ("mr_proc_cmdline","mr_etc_fstab","mr_etc_raidtab","mr_proc_swaps","mr_proc_partitions","mr_proc_filesystems","mr_proc_modules","mr_proc_xen","mr_proc_cpuinfo","mr_proc_devices","mr_proc_meminfo","mr_proc_misc","mr_proc_mounts") {
 	my $key = $p;
 	$key =~ s/mr_//;
 	my ($pp) = pb_conf_get_if($p);
 	if (defined $pp) {
-		my $file = pb_distro_get_param($mr_os->{'name'},$mr_os->{'version'},$mr_os->{'arch'},$pp,$mr_os->{'family'},$mr_os->{'type'},$mr_os->{'os'});
+		my $file = pb_distro_get_param($mr_os->{'pbos'},$pp);
 		if (-r $file) {
 			pb_log(2,"DEBUG: File found: $file\n");
 			$mr_os->{'files'}->{$key} = pb_get_content($file);
@@ -93,6 +100,9 @@ for my $p ("mr_proc_cmdline","mr_etc_fstab","mr_etc_raidtab","mr_proc_swaps","mr
 	}
 }
 
+pb_log(2,"OS Inventory: files ".Dumper($mr_os)."\n");
+
+return;
 # Get some commands result content when they exist; Depends on genre or more precise tuple
 for my $p ("mr_cmd_mount","mr_cmd_df","mr_cmd_dmidecode","mr_cmd_lshw") {
 	my $key = $p;
@@ -100,9 +110,9 @@ for my $p ("mr_cmd_mount","mr_cmd_df","mr_cmd_dmidecode","mr_cmd_lshw") {
 	my ($pp) = pb_conf_get_if($p);
 	my ($po) = pb_conf_get_if("mr_opt_".$key);
 	if (defined $pp) {
-		my $cmd = pb_distro_get_param($mr_os->{'name'},$mr_os->{'version'},$mr_os->{'arch'},$pp,$mr_os->{'family'},$mr_os->{'type'},$mr_os->{'os'});
+		my $cmd = pb_distro_get_param($mr_os->{'pbos'},$pp);
 		my $opt = "";
-		$opt = pb_distro_get_param($mr_os->{'name'},$mr_os->{'version'},$mr_os->{'arch'},$po,$mr_os->{'family'},$mr_os->{'type'},$mr_os->{'os'}) if (defined ($po));
+		$opt = pb_distro_get_param($mr_os->{'pbos'},$po) if (defined ($po));
 		if (-x $cmd) {
 			pb_log(2,"DEBUG: Cmd found: $cmd $opt\n");
 			$mr_os->{'cmd'}->{$key} = `$cmd $opt`;
@@ -111,6 +121,8 @@ for my $p ("mr_cmd_mount","mr_cmd_df","mr_cmd_dmidecode","mr_cmd_lshw") {
 		}
 	}
 }
+
+pb_log(2,"OS Inventory: cmds ".Dumper($mr_os)."\n");
 # 
 # LVM setup
 #
