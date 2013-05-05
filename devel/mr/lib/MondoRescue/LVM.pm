@@ -216,7 +216,7 @@ close(LVM);
 
 # Analyze the existing volume groups
 #open(LVM,$lvmcmd."vgdisplay -c |") || mr_exit(-1,"Unable to execute ".$lvmcmd."vgdisplay -c");
-open(LVM,$lvmcmd."vgs --noheadings --nosuffix --units m --separator : | -o vg_all") || mr_exit(-1,"Unable to execute ".$lvmcmd."vgs");
+open(LVM,$lvmcmd."vgs --noheadings --nosuffix --units m --separator : -o vg_all |") || mr_exit(-1,"Unable to execute ".$lvmcmd."vgs");
 while (<LVM>) {
 
 =pod
